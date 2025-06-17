@@ -15,7 +15,7 @@ import '../../routes/app_routes.dart';
 /// 这个Widget包含了原HomePage的主要UI，如地址栏、搜索、分类和商店列表。
 ///
 class HomeTab extends StatefulWidget {
-  const HomeTab({Key? key}) : super(key: key);
+  const HomeTab({super.key});
 
   @override
   State<HomeTab> createState() => _HomeTabState();
@@ -25,10 +25,28 @@ class _HomeTabState extends State<HomeTab> {
   @override
   void initState() {
     super.initState();
-    // 页面加载时，自动获取商家列表
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ShopProvider>(context, listen: false).fetchShops();
+      _fetchShops();
     });
+  }
+
+  Future<void> _fetchShops() {
+    final shopProvider = Provider.of<ShopProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final address = userProvider.defaultAddress;
+
+    if (address != null) {
+      if (address.latitude != null && address.longitude != null) {
+        return shopProvider.getNearbyShops(
+          latitude: address.latitude!,
+          longitude: address.longitude!,
+        );
+      } else {
+        return shopProvider.getShopsByCity(city: address.city);
+      }
+    } else {
+      return shopProvider.getShopsByCity(city: '昆明市');
+    }
   }
 
   // 模拟的食品分类数据
@@ -46,9 +64,7 @@ class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: () async {
-        await Provider.of<ShopProvider>(context, listen: false).fetchShops(sortBy: 'distance');
-      },
+      onRefresh: _fetchShops,
       child: CustomScrollView(
         slivers: [
           // 顶部AppBar，包含地址和搜索
@@ -70,7 +86,7 @@ class _HomeTabState extends State<HomeTab> {
   // 构建SliverAppBar
   SliverAppBar _buildSliverAppBar(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
-    final address = userProvider.selectedAddress;
+    final address = userProvider.defaultAddress;
     final displayAddress = address != null ? address.fullAddress : '请选择收货地址';
 
     return SliverAppBar(
@@ -78,7 +94,7 @@ class _HomeTabState extends State<HomeTab> {
       floating: true,
       backgroundColor: AppTheme.primaryColor,
       title: GestureDetector(
-        onTap: () { /* 跳转到地址选择页 */ },
+        onTap: () => context.push(AppRoutes.addressList),
         child: Row(
           children: [
             const Icon(Icons.location_on, color: Colors.white, size: 20),
@@ -99,7 +115,7 @@ class _HomeTabState extends State<HomeTab> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: GestureDetector(
-            onTap: () { /* 跳转到搜索页 */ },
+            onTap: () => context.push(AppRoutes.search),
             child: Container(
               height: 40,
               decoration: BoxDecoration(
@@ -185,8 +201,12 @@ class _HomeTabState extends State<HomeTab> {
   Widget _buildShopList() {
     return Consumer<ShopProvider>(
       builder: (context, shopProvider, child) {
-        if (shopProvider.isLoading && shopProvider.shops.isEmpty) {
-          return const SliverFillRemaining(child: Center(child: LoadingIndicator()));
+        if (shopProvider.isLoadingShops) {
+          return const SliverFillRemaining(child: LoadingIndicator());
+        }
+
+        if (shopProvider.error != null) {
+          return SliverFillRemaining(child: Center(child: Text('加载失败: ${shopProvider.error}')));
         }
 
         if (shopProvider.shops.isEmpty) {
@@ -199,7 +219,6 @@ class _HomeTabState extends State<HomeTab> {
               final shop = shopProvider.shops[index];
               return ShopListItem(
                 shop: shop,
-                onTap: () => context.push(AppRoutes.shop, extra: shop),
               );
             },
             childCount: shopProvider.shops.length,

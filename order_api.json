@@ -1,0 +1,1626 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "API Documentation",
+    "version" : "1.0"
+  },
+  "paths" : {
+    "/orders/price" : {
+      "post" : {
+        "summary" : "计算订单价格",
+        "description" : "计算订单价格",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "addressId", "orderItems", "storeId", "userId" ],
+                "type" : "object",
+                "properties" : {
+                  "userId" : {
+                    "type" : "string",
+                    "description" : "用户ID"
+                  },
+                  "storeId" : {
+                    "type" : "string",
+                    "description" : "商家ID"
+                  },
+                  "addressId" : {
+                    "type" : "string",
+                    "description" : "收货地址ID"
+                  },
+                  "orderItems" : {
+                    "type" : "array",
+                    "description" : "订单项列表",
+                    "items" : {
+                      "required" : [ "productId", "quantity" ],
+                      "type" : "object",
+                      "properties" : {
+                        "productId" : {
+                          "type" : "string",
+                          "description" : "商品ID"
+                        },
+                        "quantity" : {
+                          "minimum" : 1,
+                          "type" : "integer",
+                          "description" : "商品数量"
+                        },
+                        "specification" : {
+                          "type" : "string",
+                          "description" : "商品规格"
+                        }
+                      },
+                      "description" : "订单项DTO"
+                    }
+                  },
+                  "remark" : {
+                    "type" : "string",
+                    "description" : "订单备注"
+                  },
+                  "couponId" : {
+                    "type" : "string",
+                    "description" : "优惠券ID"
+                  }
+                },
+                "description" : ""
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "object",
+                      "properties" : {
+                        "totalProductAmount" : {
+                          "type" : "number",
+                          "description" : "商品总金额"
+                        },
+                        "deliveryFee" : {
+                          "type" : "number",
+                          "description" : "配送费"
+                        },
+                        "discountAmount" : {
+                          "type" : "number",
+                          "description" : "优惠金额"
+                        },
+                        "payAmount" : {
+                          "type" : "number",
+                          "description" : "实际支付金额"
+                        },
+                        "discountItems" : {
+                          "type" : "array",
+                          "description" : "优惠明细列表",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "id" : {
+                                "type" : "string",
+                                "description" : "优惠ID"
+                              },
+                              "type" : {
+                                "type" : "string",
+                                "description" : "优惠类型"
+                              },
+                              "name" : {
+                                "type" : "string",
+                                "description" : "优惠名称"
+                              },
+                              "amount" : {
+                                "type" : "number",
+                                "description" : "优惠金额"
+                              },
+                              "description" : {
+                                "type" : "string",
+                                "description" : "优惠描述"
+                              }
+                            },
+                            "description" : "优惠项视图对象"
+                          }
+                        }
+                      },
+                      "description" : "数据"
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders" : {
+      "post" : {
+        "summary" : "创建订单",
+        "description" : "创建订单",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "addressId", "orderItems", "storeId", "userId" ],
+                "type" : "object",
+                "properties" : {
+                  "userId" : {
+                    "type" : "string",
+                    "description" : "用户ID"
+                  },
+                  "storeId" : {
+                    "type" : "string",
+                    "description" : "商家ID"
+                  },
+                  "addressId" : {
+                    "type" : "string",
+                    "description" : "收货地址ID"
+                  },
+                  "orderItems" : {
+                    "type" : "array",
+                    "description" : "订单项列表",
+                    "items" : {
+                      "required" : [ "productId", "quantity" ],
+                      "type" : "object",
+                      "properties" : {
+                        "productId" : {
+                          "type" : "string",
+                          "description" : "商品ID"
+                        },
+                        "quantity" : {
+                          "minimum" : 1,
+                          "type" : "integer",
+                          "description" : "商品数量"
+                        },
+                        "specification" : {
+                          "type" : "string",
+                          "description" : "商品规格"
+                        }
+                      },
+                      "description" : "订单项DTO"
+                    }
+                  },
+                  "remark" : {
+                    "type" : "string",
+                    "description" : "订单备注"
+                  },
+                  "couponId" : {
+                    "type" : "string",
+                    "description" : "优惠券ID"
+                  }
+                },
+                "description" : ""
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "object",
+                      "properties" : {
+                        "id" : {
+                          "type" : "string",
+                          "description" : "订单ID"
+                        },
+                        "orderNo" : {
+                          "type" : "string",
+                          "description" : "订单号"
+                        },
+                        "userId" : {
+                          "type" : "string",
+                          "description" : "用户ID"
+                        },
+                        "storeId" : {
+                          "type" : "string",
+                          "description" : "商家ID"
+                        },
+                        "storeName" : {
+                          "type" : "string",
+                          "description" : "商家名称"
+                        },
+                        "status" : {
+                          "type" : "string",
+                          "description" : "{PENDING_PAYMENT=待支付, PAID=已支付, PREPARING=备餐中, DELIVERING=配送中, COMPLETED=已完成, CANCELED=已取消}",
+                          "enum" : [ "PENDING_PAYMENT", "PAID", "PREPARING", "DELIVERING", "COMPLETED", "CANCELED" ]
+                        },
+                        "statusDesc" : {
+                          "type" : "string",
+                          "description" : "订单状态描述"
+                        },
+                        "totalAmount" : {
+                          "type" : "number",
+                          "description" : "订单总金额"
+                        },
+                        "payAmount" : {
+                          "type" : "number",
+                          "description" : "实际支付金额"
+                        },
+                        "discountAmount" : {
+                          "type" : "number",
+                          "description" : "优惠金额"
+                        },
+                        "deliveryFee" : {
+                          "type" : "number",
+                          "description" : "配送费"
+                        },
+                        "receiverName" : {
+                          "type" : "string",
+                          "description" : "收货人姓名"
+                        },
+                        "receiverPhone" : {
+                          "type" : "string",
+                          "description" : "收货人电话"
+                        },
+                        "receiverAddress" : {
+                          "type" : "string",
+                          "description" : "收货地址"
+                        },
+                        "remark" : {
+                          "type" : "string",
+                          "description" : "订单备注"
+                        },
+                        "payTime" : {
+                          "type" : "string",
+                          "description" : "支付时间"
+                        },
+                        "createTime" : {
+                          "type" : "string",
+                          "description" : "创建时间"
+                        },
+                        "orderItems" : {
+                          "type" : "array",
+                          "description" : "订单项列表",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "id" : {
+                                "type" : "string",
+                                "description" : "订单项ID"
+                              },
+                              "productId" : {
+                                "type" : "string",
+                                "description" : "商品ID"
+                              },
+                              "productName" : {
+                                "type" : "string",
+                                "description" : "商品名称"
+                              },
+                              "productImage" : {
+                                "type" : "string",
+                                "description" : "商品图片"
+                              },
+                              "price" : {
+                                "type" : "number",
+                                "description" : "商品单价"
+                              },
+                              "quantity" : {
+                                "type" : "integer",
+                                "description" : "商品数量"
+                              },
+                              "specification" : {
+                                "type" : "string",
+                                "description" : "商品规格"
+                              },
+                              "subtotal" : {
+                                "type" : "number",
+                                "description" : "小计金额"
+                              }
+                            },
+                            "description" : "订单项视图对象"
+                          }
+                        }
+                      },
+                      "description" : "数据"
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}" : {
+      "get" : {
+        "summary" : "根据订单ID查询订单",
+        "description" : "根据订单ID查询订单",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "object",
+                      "properties" : {
+                        "id" : {
+                          "type" : "string",
+                          "description" : "订单ID"
+                        },
+                        "orderNo" : {
+                          "type" : "string",
+                          "description" : "订单号"
+                        },
+                        "userId" : {
+                          "type" : "string",
+                          "description" : "用户ID"
+                        },
+                        "storeId" : {
+                          "type" : "string",
+                          "description" : "商家ID"
+                        },
+                        "storeName" : {
+                          "type" : "string",
+                          "description" : "商家名称"
+                        },
+                        "status" : {
+                          "type" : "string",
+                          "description" : "{PENDING_PAYMENT=待支付, PAID=已支付, PREPARING=备餐中, DELIVERING=配送中, COMPLETED=已完成, CANCELED=已取消}",
+                          "enum" : [ "PENDING_PAYMENT", "PAID", "PREPARING", "DELIVERING", "COMPLETED", "CANCELED" ]
+                        },
+                        "statusDesc" : {
+                          "type" : "string",
+                          "description" : "订单状态描述"
+                        },
+                        "totalAmount" : {
+                          "type" : "number",
+                          "description" : "订单总金额"
+                        },
+                        "payAmount" : {
+                          "type" : "number",
+                          "description" : "实际支付金额"
+                        },
+                        "discountAmount" : {
+                          "type" : "number",
+                          "description" : "优惠金额"
+                        },
+                        "deliveryFee" : {
+                          "type" : "number",
+                          "description" : "配送费"
+                        },
+                        "receiverName" : {
+                          "type" : "string",
+                          "description" : "收货人姓名"
+                        },
+                        "receiverPhone" : {
+                          "type" : "string",
+                          "description" : "收货人电话"
+                        },
+                        "receiverAddress" : {
+                          "type" : "string",
+                          "description" : "收货地址"
+                        },
+                        "remark" : {
+                          "type" : "string",
+                          "description" : "订单备注"
+                        },
+                        "payTime" : {
+                          "type" : "string",
+                          "description" : "支付时间"
+                        },
+                        "createTime" : {
+                          "type" : "string",
+                          "description" : "创建时间"
+                        },
+                        "orderItems" : {
+                          "type" : "array",
+                          "description" : "订单项列表",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "id" : {
+                                "type" : "string",
+                                "description" : "订单项ID"
+                              },
+                              "productId" : {
+                                "type" : "string",
+                                "description" : "商品ID"
+                              },
+                              "productName" : {
+                                "type" : "string",
+                                "description" : "商品名称"
+                              },
+                              "productImage" : {
+                                "type" : "string",
+                                "description" : "商品图片"
+                              },
+                              "price" : {
+                                "type" : "number",
+                                "description" : "商品单价"
+                              },
+                              "quantity" : {
+                                "type" : "integer",
+                                "description" : "商品数量"
+                              },
+                              "specification" : {
+                                "type" : "string",
+                                "description" : "商品规格"
+                              },
+                              "subtotal" : {
+                                "type" : "number",
+                                "description" : "小计金额"
+                              }
+                            },
+                            "description" : "订单项视图对象"
+                          }
+                        }
+                      },
+                      "description" : "数据"
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/no/{orderNo}" : {
+      "get" : {
+        "summary" : "根据订单号查询订单",
+        "description" : "根据订单号查询订单",
+        "parameters" : [ {
+          "name" : "orderNo",
+          "in" : "path",
+          "description" : "",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "object",
+                      "properties" : {
+                        "id" : {
+                          "type" : "string",
+                          "description" : "订单ID"
+                        },
+                        "orderNo" : {
+                          "type" : "string",
+                          "description" : "订单号"
+                        },
+                        "userId" : {
+                          "type" : "string",
+                          "description" : "用户ID"
+                        },
+                        "storeId" : {
+                          "type" : "string",
+                          "description" : "商家ID"
+                        },
+                        "storeName" : {
+                          "type" : "string",
+                          "description" : "商家名称"
+                        },
+                        "status" : {
+                          "type" : "string",
+                          "description" : "{PENDING_PAYMENT=待支付, PAID=已支付, PREPARING=备餐中, DELIVERING=配送中, COMPLETED=已完成, CANCELED=已取消}",
+                          "enum" : [ "PENDING_PAYMENT", "PAID", "PREPARING", "DELIVERING", "COMPLETED", "CANCELED" ]
+                        },
+                        "statusDesc" : {
+                          "type" : "string",
+                          "description" : "订单状态描述"
+                        },
+                        "totalAmount" : {
+                          "type" : "number",
+                          "description" : "订单总金额"
+                        },
+                        "payAmount" : {
+                          "type" : "number",
+                          "description" : "实际支付金额"
+                        },
+                        "discountAmount" : {
+                          "type" : "number",
+                          "description" : "优惠金额"
+                        },
+                        "deliveryFee" : {
+                          "type" : "number",
+                          "description" : "配送费"
+                        },
+                        "receiverName" : {
+                          "type" : "string",
+                          "description" : "收货人姓名"
+                        },
+                        "receiverPhone" : {
+                          "type" : "string",
+                          "description" : "收货人电话"
+                        },
+                        "receiverAddress" : {
+                          "type" : "string",
+                          "description" : "收货地址"
+                        },
+                        "remark" : {
+                          "type" : "string",
+                          "description" : "订单备注"
+                        },
+                        "payTime" : {
+                          "type" : "string",
+                          "description" : "支付时间"
+                        },
+                        "createTime" : {
+                          "type" : "string",
+                          "description" : "创建时间"
+                        },
+                        "orderItems" : {
+                          "type" : "array",
+                          "description" : "订单项列表",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "id" : {
+                                "type" : "string",
+                                "description" : "订单项ID"
+                              },
+                              "productId" : {
+                                "type" : "string",
+                                "description" : "商品ID"
+                              },
+                              "productName" : {
+                                "type" : "string",
+                                "description" : "商品名称"
+                              },
+                              "productImage" : {
+                                "type" : "string",
+                                "description" : "商品图片"
+                              },
+                              "price" : {
+                                "type" : "number",
+                                "description" : "商品单价"
+                              },
+                              "quantity" : {
+                                "type" : "integer",
+                                "description" : "商品数量"
+                              },
+                              "specification" : {
+                                "type" : "string",
+                                "description" : "商品规格"
+                              },
+                              "subtotal" : {
+                                "type" : "number",
+                                "description" : "小计金额"
+                              }
+                            },
+                            "description" : "订单项视图对象"
+                          }
+                        }
+                      },
+                      "description" : "数据"
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/user/{userId}" : {
+      "get" : {
+        "summary" : "根据用户ID查询订单列表",
+        "description" : "根据用户ID查询订单列表",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "description" : "",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "description" : " PENDING_PAYMENT :待支付\nPAID :已支付\nPREPARING :备餐中\nDELIVERING :配送中\nCOMPLETED :已完成\nCANCELED :已取消",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "nullable" : false
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "object",
+                      "properties" : {
+                        "content" : {
+                          "type" : "array",
+                          "description" : "",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "id" : {
+                                "type" : "string",
+                                "description" : "订单ID"
+                              },
+                              "orderNo" : {
+                                "type" : "string",
+                                "description" : "订单号"
+                              },
+                              "userId" : {
+                                "type" : "string",
+                                "description" : "用户ID"
+                              },
+                              "storeId" : {
+                                "type" : "string",
+                                "description" : "商家ID"
+                              },
+                              "storeName" : {
+                                "type" : "string",
+                                "description" : "商家名称"
+                              },
+                              "status" : {
+                                "type" : "string",
+                                "description" : "{PENDING_PAYMENT=待支付, PAID=已支付, PREPARING=备餐中, DELIVERING=配送中, COMPLETED=已完成, CANCELED=已取消}",
+                                "enum" : [ "PENDING_PAYMENT", "PAID", "PREPARING", "DELIVERING", "COMPLETED", "CANCELED" ]
+                              },
+                              "statusDesc" : {
+                                "type" : "string",
+                                "description" : "订单状态描述"
+                              },
+                              "totalAmount" : {
+                                "type" : "number",
+                                "description" : "订单总金额"
+                              },
+                              "payAmount" : {
+                                "type" : "number",
+                                "description" : "实际支付金额"
+                              },
+                              "discountAmount" : {
+                                "type" : "number",
+                                "description" : "优惠金额"
+                              },
+                              "deliveryFee" : {
+                                "type" : "number",
+                                "description" : "配送费"
+                              },
+                              "receiverName" : {
+                                "type" : "string",
+                                "description" : "收货人姓名"
+                              },
+                              "receiverPhone" : {
+                                "type" : "string",
+                                "description" : "收货人电话"
+                              },
+                              "receiverAddress" : {
+                                "type" : "string",
+                                "description" : "收货地址"
+                              },
+                              "remark" : {
+                                "type" : "string",
+                                "description" : "订单备注"
+                              },
+                              "payTime" : {
+                                "type" : "string",
+                                "description" : "支付时间"
+                              },
+                              "createTime" : {
+                                "type" : "string",
+                                "description" : "创建时间"
+                              },
+                              "orderItems" : {
+                                "type" : "array",
+                                "description" : "订单项列表",
+                                "items" : {
+                                  "type" : "object",
+                                  "properties" : {
+                                    "id" : {
+                                      "type" : "string",
+                                      "description" : "订单项ID"
+                                    },
+                                    "productId" : {
+                                      "type" : "string",
+                                      "description" : "商品ID"
+                                    },
+                                    "productName" : {
+                                      "type" : "string",
+                                      "description" : "商品名称"
+                                    },
+                                    "productImage" : {
+                                      "type" : "string",
+                                      "description" : "商品图片"
+                                    },
+                                    "price" : {
+                                      "type" : "number",
+                                      "description" : "商品单价"
+                                    },
+                                    "quantity" : {
+                                      "type" : "integer",
+                                      "description" : "商品数量"
+                                    },
+                                    "specification" : {
+                                      "type" : "string",
+                                      "description" : "商品规格"
+                                    },
+                                    "subtotal" : {
+                                      "type" : "number",
+                                      "description" : "小计金额"
+                                    }
+                                  },
+                                  "description" : "订单项视图对象"
+                                }
+                              }
+                            },
+                            "description" : "订单视图对象"
+                          }
+                        },
+                        "pageable" : {
+                          "type" : "object",
+                          "properties" : {
+                            "paged" : {
+                              "type" : "boolean"
+                            },
+                            "unpaged" : {
+                              "type" : "boolean"
+                            },
+                            "pageNumber" : {
+                              "type" : "integer"
+                            },
+                            "pageSize" : {
+                              "type" : "integer"
+                            },
+                            "offset" : {
+                              "type" : "integer",
+                              "format" : "int64"
+                            },
+                            "sort" : {
+                              "type" : "array",
+                              "items" : {
+                                "type" : "object",
+                                "properties" : {
+                                  "direction" : {
+                                    "type" : "string",
+                                    "description" : "{ASC=ASC, DESC=DESC}",
+                                    "enum" : [ "ASC", "DESC" ]
+                                  },
+                                  "property" : {
+                                    "type" : "string",
+                                    "description" : ""
+                                  },
+                                  "ignoreCase" : {
+                                    "type" : "boolean",
+                                    "description" : ""
+                                  },
+                                  "nullHandling" : {
+                                    "type" : "string",
+                                    "description" : "{NATIVE=NATIVE, NULLS_FIRST=NULLS_FIRST, NULLS_LAST=NULLS_LAST}",
+                                    "enum" : [ "NATIVE", "NULLS_FIRST", "NULLS_LAST" ]
+                                  },
+                                  "ascending" : {
+                                    "type" : "boolean"
+                                  },
+                                  "descending" : {
+                                    "type" : "boolean"
+                                  }
+                                },
+                                "description" : "org.springframework.data.domain.Sort"
+                              }
+                            }
+                          },
+                          "description" : ""
+                        },
+                        "total" : {
+                          "type" : "integer",
+                          "description" : "",
+                          "format" : "int64"
+                        },
+                        "empty" : {
+                          "type" : "boolean"
+                        },
+                        "number" : {
+                          "type" : "integer"
+                        },
+                        "size" : {
+                          "type" : "integer"
+                        },
+                        "numberOfElements" : {
+                          "type" : "integer"
+                        },
+                        "sort" : {
+                          "type" : "array",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "direction" : {
+                                "type" : "string",
+                                "description" : "{ASC=ASC, DESC=DESC}",
+                                "enum" : [ "ASC", "DESC" ]
+                              },
+                              "property" : {
+                                "type" : "string",
+                                "description" : ""
+                              },
+                              "ignoreCase" : {
+                                "type" : "boolean",
+                                "description" : ""
+                              },
+                              "nullHandling" : {
+                                "type" : "string",
+                                "description" : "{NATIVE=NATIVE, NULLS_FIRST=NULLS_FIRST, NULLS_LAST=NULLS_LAST}",
+                                "enum" : [ "NATIVE", "NULLS_FIRST", "NULLS_LAST" ]
+                              },
+                              "ascending" : {
+                                "type" : "boolean"
+                              },
+                              "descending" : {
+                                "type" : "boolean"
+                              }
+                            },
+                            "description" : "org.springframework.data.domain.Sort"
+                          }
+                        },
+                        "first" : {
+                          "type" : "boolean"
+                        },
+                        "last" : {
+                          "type" : "boolean"
+                        },
+                        "totalPages" : {
+                          "type" : "integer"
+                        },
+                        "totalElements" : {
+                          "type" : "integer",
+                          "format" : "int64"
+                        }
+                      },
+                      "description" : "数据"
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+   
+    "/orders/{orderNo}/pay" : {
+      "post" : {
+        "summary" : "支付订单",
+        "description" : "支付订单",
+        "parameters" : [ {
+          "name" : "orderNo",
+          "in" : "path",
+          "description" : "",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "object",
+                      "properties" : {
+                        "id" : {
+                          "type" : "string",
+                          "description" : "订单ID"
+                        },
+                        "orderNo" : {
+                          "type" : "string",
+                          "description" : "订单号"
+                        },
+                        "userId" : {
+                          "type" : "string",
+                          "description" : "用户ID"
+                        },
+                        "storeId" : {
+                          "type" : "string",
+                          "description" : "商家ID"
+                        },
+                        "storeName" : {
+                          "type" : "string",
+                          "description" : "商家名称"
+                        },
+                        "status" : {
+                          "type" : "string",
+                          "description" : "{PENDING_PAYMENT=待支付, PAID=已支付, PREPARING=备餐中, DELIVERING=配送中, COMPLETED=已完成, CANCELED=已取消}",
+                          "enum" : [ "PENDING_PAYMENT", "PAID", "PREPARING", "DELIVERING", "COMPLETED", "CANCELED" ]
+                        },
+                        "statusDesc" : {
+                          "type" : "string",
+                          "description" : "订单状态描述"
+                        },
+                        "totalAmount" : {
+                          "type" : "number",
+                          "description" : "订单总金额"
+                        },
+                        "payAmount" : {
+                          "type" : "number",
+                          "description" : "实际支付金额"
+                        },
+                        "discountAmount" : {
+                          "type" : "number",
+                          "description" : "优惠金额"
+                        },
+                        "deliveryFee" : {
+                          "type" : "number",
+                          "description" : "配送费"
+                        },
+                        "receiverName" : {
+                          "type" : "string",
+                          "description" : "收货人姓名"
+                        },
+                        "receiverPhone" : {
+                          "type" : "string",
+                          "description" : "收货人电话"
+                        },
+                        "receiverAddress" : {
+                          "type" : "string",
+                          "description" : "收货地址"
+                        },
+                        "remark" : {
+                          "type" : "string",
+                          "description" : "订单备注"
+                        },
+                        "payTime" : {
+                          "type" : "string",
+                          "description" : "支付时间"
+                        },
+                        "createTime" : {
+                          "type" : "string",
+                          "description" : "创建时间"
+                        },
+                        "orderItems" : {
+                          "type" : "array",
+                          "description" : "订单项列表",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "id" : {
+                                "type" : "string",
+                                "description" : "订单项ID"
+                              },
+                              "productId" : {
+                                "type" : "string",
+                                "description" : "商品ID"
+                              },
+                              "productName" : {
+                                "type" : "string",
+                                "description" : "商品名称"
+                              },
+                              "productImage" : {
+                                "type" : "string",
+                                "description" : "商品图片"
+                              },
+                              "price" : {
+                                "type" : "number",
+                                "description" : "商品单价"
+                              },
+                              "quantity" : {
+                                "type" : "integer",
+                                "description" : "商品数量"
+                              },
+                              "specification" : {
+                                "type" : "string",
+                                "description" : "商品规格"
+                              },
+                              "subtotal" : {
+                                "type" : "number",
+                                "description" : "小计金额"
+                              }
+                            },
+                            "description" : "订单项视图对象"
+                          }
+                        }
+                      },
+                      "description" : "数据"
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{id}/cancel" : {
+      "post" : {
+        "summary" : "取消订单",
+        "description" : "取消订单",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "object",
+                      "properties" : {
+                        "id" : {
+                          "type" : "string",
+                          "description" : "订单ID"
+                        },
+                        "orderNo" : {
+                          "type" : "string",
+                          "description" : "订单号"
+                        },
+                        "userId" : {
+                          "type" : "string",
+                          "description" : "用户ID"
+                        },
+                        "storeId" : {
+                          "type" : "string",
+                          "description" : "商家ID"
+                        },
+                        "storeName" : {
+                          "type" : "string",
+                          "description" : "商家名称"
+                        },
+                        "status" : {
+                          "type" : "string",
+                          "description" : "{PENDING_PAYMENT=待支付, PAID=已支付, PREPARING=备餐中, DELIVERING=配送中, COMPLETED=已完成, CANCELED=已取消}",
+                          "enum" : [ "PENDING_PAYMENT", "PAID", "PREPARING", "DELIVERING", "COMPLETED", "CANCELED" ]
+                        },
+                        "statusDesc" : {
+                          "type" : "string",
+                          "description" : "订单状态描述"
+                        },
+                        "totalAmount" : {
+                          "type" : "number",
+                          "description" : "订单总金额"
+                        },
+                        "payAmount" : {
+                          "type" : "number",
+                          "description" : "实际支付金额"
+                        },
+                        "discountAmount" : {
+                          "type" : "number",
+                          "description" : "优惠金额"
+                        },
+                        "deliveryFee" : {
+                          "type" : "number",
+                          "description" : "配送费"
+                        },
+                        "receiverName" : {
+                          "type" : "string",
+                          "description" : "收货人姓名"
+                        },
+                        "receiverPhone" : {
+                          "type" : "string",
+                          "description" : "收货人电话"
+                        },
+                        "receiverAddress" : {
+                          "type" : "string",
+                          "description" : "收货地址"
+                        },
+                        "remark" : {
+                          "type" : "string",
+                          "description" : "订单备注"
+                        },
+                        "payTime" : {
+                          "type" : "string",
+                          "description" : "支付时间"
+                        },
+                        "createTime" : {
+                          "type" : "string",
+                          "description" : "创建时间"
+                        },
+                        "orderItems" : {
+                          "type" : "array",
+                          "description" : "订单项列表",
+                          "items" : {
+                            "type" : "object",
+                            "properties" : {
+                              "id" : {
+                                "type" : "string",
+                                "description" : "订单项ID"
+                              },
+                              "productId" : {
+                                "type" : "string",
+                                "description" : "商品ID"
+                              },
+                              "productName" : {
+                                "type" : "string",
+                                "description" : "商品名称"
+                              },
+                              "productImage" : {
+                                "type" : "string",
+                                "description" : "商品图片"
+                              },
+                              "price" : {
+                                "type" : "number",
+                                "description" : "商品单价"
+                              },
+                              "quantity" : {
+                                "type" : "integer",
+                                "description" : "商品数量"
+                              },
+                              "specification" : {
+                                "type" : "string",
+                                "description" : "商品规格"
+                              },
+                              "subtotal" : {
+                                "type" : "number",
+                                "description" : "小计金额"
+                              }
+                            },
+                            "description" : "订单项视图对象"
+                          }
+                        }
+                      },
+                      "description" : "数据"
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "订单项DTO" : {
+        "required" : [ "productId", "quantity" ],
+        "type" : "object",
+        "properties" : {
+          "productId" : {
+            "type" : "string",
+            "description" : "商品ID"
+          },
+          "quantity" : {
+            "minimum" : 1,
+            "type" : "integer",
+            "description" : "商品数量"
+          },
+          "specification" : {
+            "type" : "string",
+            "description" : "商品规格"
+          }
+        },
+        "description" : "订单项DTO"
+      },
+      "优惠项视图对象" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "优惠ID"
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "优惠类型"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "优惠名称"
+          },
+          "amount" : {
+            "type" : "number",
+            "description" : "优惠金额"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "优惠描述"
+          }
+        },
+        "description" : "优惠项视图对象"
+      },
+      "价格明细视图对象" : {
+        "type" : "object",
+        "properties" : {
+          "totalProductAmount" : {
+            "type" : "number",
+            "description" : "商品总金额"
+          },
+          "deliveryFee" : {
+            "type" : "number",
+            "description" : "配送费"
+          },
+          "discountAmount" : {
+            "type" : "number",
+            "description" : "优惠金额"
+          },
+          "payAmount" : {
+            "type" : "number",
+            "description" : "实际支付金额"
+          },
+          "discountItems" : {
+            "type" : "array",
+            "description" : "优惠明细列表",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "id" : {
+                  "type" : "string",
+                  "description" : "优惠ID"
+                },
+                "type" : {
+                  "type" : "string",
+                  "description" : "优惠类型"
+                },
+                "name" : {
+                  "type" : "string",
+                  "description" : "优惠名称"
+                },
+                "amount" : {
+                  "type" : "number",
+                  "description" : "优惠金额"
+                },
+                "description" : {
+                  "type" : "string",
+                  "description" : "优惠描述"
+                }
+              },
+              "description" : "优惠项视图对象"
+            }
+          }
+        },
+        "description" : "数据"
+      },
+      "订单项视图对象" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "订单项ID"
+          },
+          "productId" : {
+            "type" : "string",
+            "description" : "商品ID"
+          },
+          "productName" : {
+            "type" : "string",
+            "description" : "商品名称"
+          },
+          "productImage" : {
+            "type" : "string",
+            "description" : "商品图片"
+          },
+          "price" : {
+            "type" : "number",
+            "description" : "商品单价"
+          },
+          "quantity" : {
+            "type" : "integer",
+            "description" : "商品数量"
+          },
+          "specification" : {
+            "type" : "string",
+            "description" : "商品规格"
+          },
+          "subtotal" : {
+            "type" : "number",
+            "description" : "小计金额"
+          }
+        },
+        "description" : "订单项视图对象"
+      },
+      "订单视图对象" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "订单ID"
+          },
+          "orderNo" : {
+            "type" : "string",
+            "description" : "订单号"
+          },
+          "userId" : {
+            "type" : "string",
+            "description" : "用户ID"
+          },
+          "storeId" : {
+            "type" : "string",
+            "description" : "商家ID"
+          },
+          "storeName" : {
+            "type" : "string",
+            "description" : "商家名称"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "{PENDING_PAYMENT=待支付, PAID=已支付, PREPARING=备餐中, DELIVERING=配送中, COMPLETED=已完成, CANCELED=已取消}",
+            "enum" : [ "PENDING_PAYMENT", "PAID", "PREPARING", "DELIVERING", "COMPLETED", "CANCELED" ]
+          },
+          "statusDesc" : {
+            "type" : "string",
+            "description" : "订单状态描述"
+          },
+          "totalAmount" : {
+            "type" : "number",
+            "description" : "订单总金额"
+          },
+          "payAmount" : {
+            "type" : "number",
+            "description" : "实际支付金额"
+          },
+          "discountAmount" : {
+            "type" : "number",
+            "description" : "优惠金额"
+          },
+          "deliveryFee" : {
+            "type" : "number",
+            "description" : "配送费"
+          },
+          "receiverName" : {
+            "type" : "string",
+            "description" : "收货人姓名"
+          },
+          "receiverPhone" : {
+            "type" : "string",
+            "description" : "收货人电话"
+          },
+          "receiverAddress" : {
+            "type" : "string",
+            "description" : "收货地址"
+          },
+          "remark" : {
+            "type" : "string",
+            "description" : "订单备注"
+          },
+          "payTime" : {
+            "type" : "string",
+            "description" : "支付时间"
+          },
+          "createTime" : {
+            "type" : "string",
+            "description" : "创建时间"
+          },
+          "orderItems" : {
+            "type" : "array",
+            "description" : "订单项列表",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "id" : {
+                  "type" : "string",
+                  "description" : "订单项ID"
+                },
+                "productId" : {
+                  "type" : "string",
+                  "description" : "商品ID"
+                },
+                "productName" : {
+                  "type" : "string",
+                  "description" : "商品名称"
+                },
+                "productImage" : {
+                  "type" : "string",
+                  "description" : "商品图片"
+                },
+                "price" : {
+                  "type" : "number",
+                  "description" : "商品单价"
+                },
+                "quantity" : {
+                  "type" : "integer",
+                  "description" : "商品数量"
+                },
+                "specification" : {
+                  "type" : "string",
+                  "description" : "商品规格"
+                },
+                "subtotal" : {
+                  "type" : "number",
+                  "description" : "小计金额"
+                }
+              },
+              "description" : "订单项视图对象"
+            }
+          }
+        },
+        "description" : "数据"
+      },
+      "org.springframework.data.domain.Sort" : {
+        "type" : "object",
+        "properties" : {
+          "direction" : {
+            "type" : "string",
+            "description" : "{ASC=ASC, DESC=DESC}",
+            "enum" : [ "ASC", "DESC" ]
+          },
+          "property" : {
+            "type" : "string",
+            "description" : ""
+          },
+          "ignoreCase" : {
+            "type" : "boolean",
+            "description" : ""
+          },
+          "nullHandling" : {
+            "type" : "string",
+            "description" : "{NATIVE=NATIVE, NULLS_FIRST=NULLS_FIRST, NULLS_LAST=NULLS_LAST}",
+            "enum" : [ "NATIVE", "NULLS_FIRST", "NULLS_LAST" ]
+          },
+          "ascending" : {
+            "type" : "boolean"
+          },
+          "descending" : {
+            "type" : "boolean"
+          }
+        },
+        "description" : "org.springframework.data.domain.Sort"
+      },
+      "org.springframework.data.domain.Pageable" : {
+        "type" : "object",
+        "properties" : {
+          "paged" : {
+            "type" : "boolean"
+          },
+          "unpaged" : {
+            "type" : "boolean"
+          },
+          "pageNumber" : {
+            "type" : "integer"
+          },
+          "pageSize" : {
+            "type" : "integer"
+          },
+          "offset" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "sort" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "direction" : {
+                  "type" : "string",
+                  "description" : "{ASC=ASC, DESC=DESC}",
+                  "enum" : [ "ASC", "DESC" ]
+                },
+                "property" : {
+                  "type" : "string",
+                  "description" : ""
+                },
+                "ignoreCase" : {
+                  "type" : "boolean",
+                  "description" : ""
+                },
+                "nullHandling" : {
+                  "type" : "string",
+                  "description" : "{NATIVE=NATIVE, NULLS_FIRST=NULLS_FIRST, NULLS_LAST=NULLS_LAST}",
+                  "enum" : [ "NATIVE", "NULLS_FIRST", "NULLS_LAST" ]
+                },
+                "ascending" : {
+                  "type" : "boolean"
+                },
+                "descending" : {
+                  "type" : "boolean"
+                }
+              },
+              "description" : "org.springframework.data.domain.Sort"
+            }
+          }
+        },
+        "description" : ""
+      }
+    }
+  }
+}

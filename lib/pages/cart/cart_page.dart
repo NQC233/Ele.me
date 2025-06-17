@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/cart_provider.dart';
-import '../../models/cart.dart';
-import '../../models/shop.dart';
+import '../../providers/user_provider.dart';
 import '../../widgets/common/empty_placeholder.dart';
-import '../../config/app_theme.dart';
 import '../../routes/app_routes.dart';
 
 ///
@@ -14,133 +12,70 @@ import '../../routes/app_routes.dart';
 /// 展示购物车中的商品列表，并提供结算功能。
 ///
 class CartPage extends StatelessWidget {
-  const CartPage({Key? key}) : super(key: key);
+  const CartPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
+
+    if (cartProvider.isEmpty) {
+      return const EmptyPlaceholder(
+        icon: Icons.shopping_cart_outlined,
+        title: '购物车是空的',
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('购物车'),
+        title: Text('购物车 (${cartProvider.shopId})'),
         actions: [
-          TextButton(
-            onPressed: () {
-              // 添加清空购物车逻辑
-              Provider.of<CartProvider>(context, listen: false).clearCart();
-            },
-            child: const Text('清空', style: TextStyle(color: AppTheme.textColor)),
-          )
+          IconButton(
+            icon: const Icon(Icons.clear_all),
+            onPressed: () => cartProvider.clearCart(),
+          ),
         ],
       ),
-      body: Consumer<CartProvider>(
-        builder: (context, cartProvider, child) {
-          if (cartProvider.cart == null || cartProvider.itemCount == 0) {
-            return const EmptyPlaceholder(
-              icon: Icons.shopping_cart_outlined,
-              title: '购物车是空的',
-              subtitle: '快去挑选一些喜欢的商品吧',
-            );
-          }
-          return _buildCartContent(context, cartProvider);
-        },
-      ),
-    );
-  }
-
-  // 构建购物车主体内容
-  Widget _buildCartContent(BuildContext context, CartProvider cartProvider) {
-    final cart = cartProvider.cart!;
-    return Column(
-      children: [
-        // 商品列表
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: cart.items.length,
-            itemBuilder: (context, index) {
-              final item = cart.items[index];
-              return _buildCartItem(context, cart, item, cartProvider);
-            },
-          ),
-        ),
-        // 底部结算栏
-        _buildBottomBar(context, cart),
-      ],
-    );
-  }
-
-  // 构建单个购物车商品项
-  Widget _buildCartItem(BuildContext context, Cart cart, CartItem item, CartProvider cartProvider) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          children: [
-            // 商品图片
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(item.food.image, width: 70, height: 70, fit: BoxFit.cover),
-            ),
-            const SizedBox(width: 12),
-            // 商品信息
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.food.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Text('¥${item.food.price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14, color: AppTheme.secondaryTextColor)),
-                ],
-              ),
-            ),
-            // 数量控制器
-            Row(
+      body: ListView.builder(
+        itemCount: cartProvider.cart.items.length,
+        itemBuilder: (context, index) {
+          final item = cartProvider.cart.items[index];
+          return ListTile(
+            leading: Image.network(item.food.imageUrl, width: 50, height: 50, fit: BoxFit.cover),
+            title: Text(item.food.name),
+            subtitle: Text('¥${item.food.price.toStringAsFixed(2)}'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
-                  onPressed: () => cartProvider.decreaseFromCart(item.food.id),
+                  icon: const Icon(Icons.remove_circle_outline),
+                  onPressed: () => cartProvider.decreaseFromCart(item.food),
                 ),
-                Text('${item.quantity}', style: const TextStyle(fontSize: 16)),
+                Text('${item.quantity}'),
                 IconButton(
-                  icon: const Icon(Icons.add_circle, color: AppTheme.primaryColor),
-                  onPressed: () {
-                    // 构造临时的Shop对象以匹配addToCart的签名
-                    final tempShop = Shop(
-                      id: cart.shopId,
-                      name: cart.shopName,
-                      image: cart.shopImage,
-                      // 其他字段为必需，但在此上下文中不重要，使用默认值
-                      rating: 0,
-                      monthSales: 0,
-                      deliveryTime: 0,
-                      deliveryFee: 0,
-                      minOrderAmount: 0,
-                      distance: 0,
-                      address: '',
-                      businessHours: [],
-                      notice: '',
-                    );
-                    cartProvider.addToCart(tempShop, item.food);
-                  },
+                  icon: const Icon(Icons.add_circle_outline),
+                  onPressed: () => cartProvider.incrementItem(item.food),
                 ),
               ],
-            )
-          ],
-        ),
+            ),
+          );
+        },
       ),
+      bottomNavigationBar: _buildBottomBar(context),
     );
   }
 
-  // 构建底部结算栏
-  Widget _buildBottomBar(BuildContext context, Cart cart) {
+  Widget _buildBottomBar(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
+            blurRadius: 5,
             offset: const Offset(0, -2),
           ),
         ],
@@ -148,32 +83,19 @@ class CartPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 总计金额
-          RichText(
-            text: TextSpan(
-              text: '合计: ',
-              style: const TextStyle(fontSize: 16, color: AppTheme.textColor),
-              children: <TextSpan>[
-                TextSpan(
-                  text: '¥${cart.totalPrice.toStringAsFixed(2)}',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
-                ),
-              ],
-            ),
+          Text(
+            '总计: ¥${cartProvider.totalPrice.toStringAsFixed(2)}',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          // 结算按钮
           ElevatedButton(
             onPressed: () {
-              AppRoutes.router.push(AppRoutes.orderConfirmation);
+              if (userProvider.isLoggedIn) {
+                AppRoutes.router.push(AppRoutes.orderConfirmation);
+              } else {
+                AppRoutes.router.push(AppRoutes.login);
+              }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: const Text('去结算', style: TextStyle(fontSize: 16, color: Colors.white)),
+            child: const Text('去结算'),
           ),
         ],
       ),

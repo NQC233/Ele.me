@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../models/shop.dart';
 
 ///
 /// 商家详情页的"评价"选项卡 (占位符)
 ///
 class ShopReviewsTab extends StatelessWidget {
-  const ShopReviewsTab({Key? key}) : super(key: key);
+  final Shop shop;
+  const ShopReviewsTab({Key? key, required this.shop}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

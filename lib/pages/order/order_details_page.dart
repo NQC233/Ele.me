@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 
 import '../../providers/order_provider.dart';
-import '../../models/order.dart';
+import '../../models/order.dart' as model;
 import '../../widgets/common/loading_indicator.dart';
 import '../../config/app_theme.dart';
 
@@ -20,7 +20,7 @@ class OrderDetailsPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _OrderDetailsPageState createState() => _OrderDetailsPageState();
+  State<OrderDetailsPage> createState() => _OrderDetailsPageState();
 }
 
 class _OrderDetailsPageState extends State<OrderDetailsPage> {
@@ -29,197 +29,152 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     super.initState();
     // 使用 postFrameCallback 确保 BuildContext 已准备好
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<OrderProvider>(context, listen: false)
-          .fetchOrderById(widget.orderId);
+      Provider.of<OrderProvider>(context, listen: false).fetchOrderById(widget.orderId);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('订单详情'),
-      ),
-      body: Consumer<OrderProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading && provider.currentOrder == null) {
-            return const LoadingIndicator();
-          }
+    return Consumer<OrderProvider>(
+      builder: (context, orderProvider, child) {
+        final order = orderProvider.currentOrder;
 
-          if (provider.currentOrder == null) {
-            return const Center(
-              child: Text('订单不存在或加载失败'),
-            );
-          }
+        if (orderProvider.isLoading && order == null) {
+          return const Scaffold(body: LoadingIndicator());
+        }
 
-          final order = provider.currentOrder!;
-
-          return ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              _buildStatusSection(order),
-              const SizedBox(height: 20),
-              _buildShopSection(context, order),
-              const SizedBox(height: 20),
-              _buildItemsSection(order),
-              const SizedBox(height: 20),
-              _buildPricingSection(order),
-               const SizedBox(height: 20),
-              _buildOrderInfoSection(order),
-            ],
+        if (order == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('订单详情')),
+            body: Center(child: Text(orderProvider.error ?? '无法加载订单详情')),
           );
-        },
-      ),
+        }
+
+        return Scaffold(
+          appBar: AppBar(title: Text(order.storeName)),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStatusSection(context, order),
+                const Divider(height: 32),
+                _buildItemsSection(context, order),
+                const Divider(height: 32),
+                _buildPriceSection(context, order),
+                const Divider(height: 32),
+                _buildDeliverySection(context, order),
+                const Divider(height: 32),
+                _buildOrderInfoSection(context, order),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   // 订单状态区块
-  Widget _buildStatusSection(Order order) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              order.status.displayName,
-              style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: order.status.color),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '订单已送达，感谢您的信任，期待再次光临！', // 模拟文本
-              style: TextStyle(fontSize: 14, color: AppTheme.secondaryTextColor),
-            ),
-            const SizedBox(height: 16),
-             Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  ElevatedButton(onPressed: (){}, child: const Text("评价")),
-                  ElevatedButton(onPressed: (){}, child: const Text("再来一单"))
-                ],
-              )
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 店铺信息区块
-  Widget _buildShopSection(BuildContext context, Order order) {
-    return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundImage: CachedNetworkImageProvider(order.shopImage),
-        ),
-        title: Text(order.shopName, style: const TextStyle(fontWeight: FontWeight.bold)),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {
-          // TODO: 跳转到店铺页面, 需要Shop对象
-        },
+  Widget _buildStatusSection(BuildContext context, model.Order order) {
+    return Center(
+      child: Column(
+        children: [
+          Text(order.status.displayName, style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: order.status.color)),
+          const SizedBox(height: 8),
+          Text('感谢您对${order.storeName}的信任，期待再次光临'),
+        ],
       ),
     );
   }
 
   // 商品列表区块
-  Widget _buildItemsSection(Order order) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(order.shopName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const Divider(),
-            ...order.items.map((item) => ListTile(
-                  leading: CachedNetworkImage(
-                    imageUrl: item.food.image,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                  ),
-                  title: Text(item.food.name),
-                  subtitle: Text('x ${item.quantity}'),
-                  trailing: Text('¥${(item.food.price * item.quantity).toStringAsFixed(2)}'),
-                )),
-             const Divider(),
-             ListTile(
-              title: const Text("配送费"),
-              trailing: Text('¥${order.deliveryFee.toStringAsFixed(2)}'),
-            ),
-             ListTile(
-              title: const Text("包装费"),
-              trailing: Text('¥${order.packingFee.toStringAsFixed(2)}'),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildItemsSection(BuildContext context, model.Order order) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(order.storeName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        ...order.items.map((item) => ListTile(
+              leading: Image.network(item.productImage, width: 40, height: 40, fit: BoxFit.cover),
+              title: Text(item.productName),
+              subtitle: Text('x${item.quantity}'),
+              trailing: Text('¥${item.subtotal.toStringAsFixed(2)}'),
+            )),
+      ],
     );
   }
   
   // 价格信息区块
-  Widget _buildPricingSection(Order order) {
-     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-             ListTile(
-              title: const Text("优惠"),
-              trailing: Text('- ¥${order.discount.toStringAsFixed(2)}', style: const TextStyle(color: Colors.red)),
-            ),
-             ListTile(
-              title: const Text("总计"),
-              trailing: Text('¥${order.totalPrice.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            ),
-          ],
-        ),
-      ),
+  Widget _buildPriceSection(BuildContext context, model.Order order) {
+    return Column(
+      children: [
+        _buildPriceRow('商品总价', '¥${order.totalAmount.toStringAsFixed(2)}'),
+        _buildPriceRow('配送费', '¥${order.deliveryFee.toStringAsFixed(2)}'),
+        if (order.discountAmount > 0)
+          _buildPriceRow('优惠金额', '-¥${order.discountAmount.toStringAsFixed(2)}', isHighlight: true),
+        const Divider(),
+        _buildPriceRow('实付金额', '¥${order.payAmount.toStringAsFixed(2)}', isHighlight: true),
+      ],
+    );
+  }
+
+  // 配送信息区块
+  Widget _buildDeliverySection(BuildContext context, model.Order order) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('配送信息', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        _buildInfoRow('收货地址', order.receiverAddress),
+        _buildInfoRow('收货人', order.receiverName),
+        _buildInfoRow('联系电话', order.receiverPhone),
+      ],
     );
   }
 
   // 订单信息区块
-  Widget _buildOrderInfoSection(Order order) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('配送信息', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const Divider(),
-            ListTile(
-              title: const Text('收货地址'),
-              subtitle: Text('${order.address.province}${order.address.city}${order.address.district}${order.address.detail}\n${order.address.name} ${order.address.phone}'),
+  Widget _buildOrderInfoSection(BuildContext context, model.Order order) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('订单信息', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        _buildInfoRow('订单号', order.orderNo),
+        _buildInfoRow('下单时间', DateFormat('yyyy-MM-dd HH:mm:ss').format(order.createTime)),
+        if (order.remark != null && order.remark!.isNotEmpty)
+          _buildInfoRow('订单备注', order.remark!),
+      ],
+    );
+  }
+
+  Widget _buildPriceRow(String title, String amount, {bool isHighlight = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title),
+          Text(
+            amount,
+            style: TextStyle(
+              fontWeight: isHighlight ? FontWeight.bold : FontWeight.normal,
+              color: isHighlight ? Theme.of(context).colorScheme.primary : null,
             ),
-             ListTile(
-              title: const Text('配送方式'),
-              subtitle: Text('商家配送'),
-            ),
-            const SizedBox(height: 16),
-            const Text('订单信息', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const Divider(),
-             ListTile(
-              title: const Text('订单号'),
-              subtitle: Text(order.id),
-            ),
-             ListTile(
-              title: const Text('下单时间'),
-              subtitle: Text(DateFormat('yyyy-MM-dd HH:mm').format(order.createTime)),
-            ),
-             ListTile(
-              title: const Text('支付方式'),
-              subtitle: Text('在线支付'),
-            ),
-             if (order.remark != null && order.remark!.isNotEmpty)
-              ListTile(
-                title: const Text('备注信息'),
-                subtitle: Text(order.remark!),
-              ),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 80, child: Text(title, style: const TextStyle(color: Colors.grey))),
+          Expanded(child: Text(value)),
+        ],
       ),
     );
   }

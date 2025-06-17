@@ -14,13 +14,13 @@ class EmptyPlaceholder extends StatelessWidget {
   final VoidCallback? onButtonPressed;
 
   const EmptyPlaceholder({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     this.subtitle,
     this.buttonText = '去逛逛',
     this.onButtonPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

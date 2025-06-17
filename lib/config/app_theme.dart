@@ -78,4 +78,18 @@ class AppTheme {
       ),
     );
   }
+
+  static final ThemeData lightTheme = ThemeData(
+    primarySwatch: Colors.blue,
+    visualDensity: VisualDensity.adaptivePlatformDensity,
+    brightness: Brightness.light,
+    // 其他通用主题设置
+  );
+
+  static final ThemeData darkTheme = ThemeData(
+    primarySwatch: Colors.blue,
+    brightness: Brightness.dark,
+    visualDensity: VisualDensity.adaptivePlatformDensity,
+    // 其他深色主题设置
+  );
 } 

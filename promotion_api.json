@@ -1,0 +1,202 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "API Documentation",
+    "version" : "1.0"
+  },
+  "paths" : {
+    "/promotions/applicable" : {
+      "post" : {
+        "summary" : "获取订单可用的优惠信息",
+        "description" : "获取订单可用的优惠信息",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "items", "storeId", "totalAmount", "userId" ],
+                "type" : "object",
+                "properties" : {
+                  "userId" : {
+                    "type" : "string",
+                    "description" : "用户ID"
+                  },
+                  "storeId" : {
+                    "type" : "string",
+                    "description" : "店铺ID"
+                  },
+                  "totalAmount" : {
+                    "minimum" : 0.01,
+                    "type" : "number",
+                    "description" : "订单原始总金额"
+                  },
+                  "items" : {
+                    "type" : "array",
+                    "description" : "订单商品列表",
+                    "items" : {
+                      "required" : [ "price", "productId", "productName", "quantity" ],
+                      "type" : "object",
+                      "properties" : {
+                        "productId" : {
+                          "type" : "string",
+                          "description" : "商品ID"
+                        },
+                        "productName" : {
+                          "type" : "string",
+                          "description" : "商品名称"
+                        },
+                        "price" : {
+                          "minimum" : 0.01,
+                          "type" : "number",
+                          "description" : "单价"
+                        },
+                        "quantity" : {
+                          "minimum" : 1,
+                          "type" : "integer",
+                          "description" : "数量"
+                        },
+                        "categoryId" : {
+                          "type" : "string",
+                          "description" : "商品分类ID"
+                        }
+                      },
+                      "description" : "订单商品明细"
+                    }
+                  },
+                  "couponId" : {
+                    "type" : "string",
+                    "description" : "优惠券ID（如果使用）"
+                  }
+                },
+                "description" : "订单快照"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "可用优惠列表",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "array",
+                      "description" : "数据",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "id" : {
+                            "type" : "string",
+                            "description" : "优惠ID"
+                          },
+                          "type" : {
+                            "type" : "string",
+                            "description" : "优惠类型：ACTIVITY(活动)、COUPON(优惠券)"
+                          },
+                          "title" : {
+                            "type" : "string",
+                            "description" : "优惠标题"
+                          },
+                          "description" : {
+                            "type" : "string",
+                            "description" : "优惠说明"
+                          },
+                          "discountAmount" : {
+                            "type" : "number",
+                            "description" : "优惠金额"
+                          },
+                          "priority" : {
+                            "type" : "integer",
+                            "description" : "优先级 (数字越小优先级越高)"
+                          }
+                        },
+                        "description" : "优惠信息VO\n用于返回给前端展示的优惠信息"
+                      }
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  },
+                  "description" : "可用优惠列表"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "订单商品明细" : {
+        "required" : [ "price", "productId", "productName", "quantity" ],
+        "type" : "object",
+        "properties" : {
+          "productId" : {
+            "type" : "string",
+            "description" : "商品ID"
+          },
+          "productName" : {
+            "type" : "string",
+            "description" : "商品名称"
+          },
+          "price" : {
+            "minimum" : 0.01,
+            "type" : "number",
+            "description" : "单价"
+          },
+          "quantity" : {
+            "minimum" : 1,
+            "type" : "integer",
+            "description" : "数量"
+          },
+          "categoryId" : {
+            "type" : "string",
+            "description" : "商品分类ID"
+          }
+        },
+        "description" : "订单商品明细"
+      },
+      "优惠信息VO\n用于返回给前端展示的优惠信息" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "优惠ID"
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "优惠类型：ACTIVITY(活动)、COUPON(优惠券)"
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "优惠标题"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "优惠说明"
+          },
+          "discountAmount" : {
+            "type" : "number",
+            "description" : "优惠金额"
+          },
+          "priority" : {
+            "type" : "integer",
+            "description" : "优先级 (数字越小优先级越高)"
+          }
+        },
+        "description" : "优惠信息VO\n用于返回给前端展示的优惠信息"
+      }
+    }
+  }
+}

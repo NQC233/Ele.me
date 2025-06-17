@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:badges/badges.dart' as badges;
-import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../widgets/shop/shop_list_item.dart';
-import '../../widgets/common/loading_indicator.dart';
 import '../../config/app_theme.dart';
-import '../../providers/shop_provider.dart';
-import '../../providers/cart_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../routes/app_routes.dart';
-import '../../models/shop.dart';
 import 'home_tab.dart';
 import '../order/orders_page.dart';
 import '../profile/profile_page.dart';
@@ -35,14 +28,23 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   // 页面列表
-  static const List<Widget> _pages = <Widget>[
-    HomeTab(),
-    OrdersPage(),
-    ProfilePage(),
+  static final List<Widget> _widgetOptions = <Widget>[
+    const HomeTab(),
+    const OrdersPage(),
+    const ProfilePage(),
   ];
 
   // tab切换处理
   void _onItemTapped(int index) {
+    if (index == 1 || index == 2) {
+      // 检查是否已登录
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      if (!userProvider.isLoggedIn) {
+        // 如果未登录，则导航到登录页
+        context.push(AppRoutes.login);
+        return; // 阻止切换到订单或个人中心页
+      }
+    }
     setState(() {
       _selectedIndex = index;
     });
@@ -53,7 +55,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: _pages,
+        children: _widgetOptions,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

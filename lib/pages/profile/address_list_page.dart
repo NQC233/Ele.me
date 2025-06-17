@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../providers/user_provider.dart';
 import '../../models/address.dart';
@@ -12,7 +11,7 @@ import '../../config/app_theme.dart';
 /// 地址列表页面
 ///
 class AddressListPage extends StatelessWidget {
-  const AddressListPage({Key? key}) : super(key: key);
+  const AddressListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +29,19 @@ class AddressListPage extends StatelessWidget {
       ),
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
-          if (userProvider.user == null || userProvider.user!.addresses.isEmpty) {
+          if (userProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          final addresses = userProvider.addresses;
+          if (addresses.isEmpty) {
             return const EmptyPlaceholder(
               icon: Icons.location_off_outlined,
               title: '您还没有添加地址',
               subtitle: '添加一个地址以便我们为您配送',
             );
           }
-          final addresses = userProvider.user!.addresses;
+          
           return ListView.builder(
             itemCount: addresses.length,
             itemBuilder: (context, index) {
@@ -68,9 +72,9 @@ class AddressListPage extends StatelessWidget {
         ),
         onTap: () {
           // 点击将地址设置为默认
-          // TODO: 后续添加设为默认的逻辑
+          userProvider.setDefaultAddress(address.id);
         },
       ),
     );
   }
-} 
+}

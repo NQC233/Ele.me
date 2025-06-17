@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import '../models/address.dart';
 import '../models/shop.dart';
-import '../models/user.dart';
 
 import '../pages/home/home_page.dart';
 import '../pages/shop/shop_page.dart';
@@ -28,14 +27,14 @@ class AppRoutes {
   static const String shop = '/shop';
   static const String cart = '/cart';
   static const String orders = '/orders';
-  static const String profile = '/profile';
-  static const String search = '/search';
+  static const String orderDetail = '/orders/detail';
   static const String login = '/login';
-  static const String orderConfirmation = '/order-confirmation';
+  static const String search = '/search';
+  static const String profile = '/profile';
   static const String addressList = '/profile/address';
-  static const String addressAdd = '/address-add';
   static const String addressEdit = '/profile/address/edit';
-  static const String orderDetails = '/order/:orderId';
+  static const String addressAdd = '/profile/address/add';
+  static const String orderConfirmation = '/order/confirm';
   
   static final GoRouter router = GoRouter(
     initialLocation: home,
@@ -46,12 +45,35 @@ class AppRoutes {
         name: home,
         builder: (context, state) => const HomePage(),
       ),
+      // 使用路径参数方式配置shop路由
+      GoRoute(
+        path: '$shop/:shopId',
+        name: 'shop_details',
+        builder: (context, state) {
+          final shopId = state.pathParameters['shopId']!;
+          debugPrint('打开商店详情，ID: $shopId');
+          return ShopPage(shopId: shopId);
+        },
+      ),
+      // 保留旧的shop路由，兼容性处理
       GoRoute(
         path: shop,
         name: shop,
         builder: (context, state) {
-          final shop = state.extra as Shop;
-          return ShopPage(shopId: shop.id);
+          // 支持两种方式传递店铺ID：
+          // 1. 作为extra参数传递Shop对象
+          // 2. 作为extra参数直接传递shopId字符串
+          if (state.extra != null) {
+            if (state.extra is Shop) {
+              final shop = state.extra as Shop;
+              return ShopPage(shopId: shop.id);
+            } else if (state.extra is String) {
+              final shopId = state.extra as String;
+              return ShopPage(shopId: shopId);
+            }
+          }
+          // 默认情况或无效参数，返回首页
+          return const HomePage();
         },
       ),
       GoRoute(
@@ -61,16 +83,16 @@ class AppRoutes {
       ),
       GoRoute(
         path: orders,
+        name: orders,
         builder: (context, state) => const OrdersPage(),
       ),
       GoRoute(
-        path: profile,
-        builder: (context, state) => const ProfilePage(),
-      ),
-      GoRoute(
-        path: search,
-        name: search,
-        builder: (context, state) => const SearchPage(),
+        path: orderDetail,
+        name: orderDetail,
+        builder: (context, state) {
+          final orderId = state.extra as String;
+          return OrderDetailsPage(orderId: orderId);
+        },
       ),
       GoRoute(
         path: login,
@@ -78,9 +100,14 @@ class AppRoutes {
         builder: (context, state) => const LoginPage(),
       ),
       GoRoute(
-        path: orderConfirmation,
-        name: orderConfirmation,
-        builder: (context, state) => const OrderConfirmationPage(),
+        path: search,
+        name: search,
+        builder: (context, state) => const SearchPage(),
+      ),
+      GoRoute(
+        path: profile,
+        name: profile,
+        builder: (context, state) => const ProfilePage(),
       ),
       GoRoute(
         path: addressList,
@@ -88,21 +115,22 @@ class AppRoutes {
         builder: (context, state) => const AddressListPage(),
       ),
       GoRoute(
+        path: addressEdit,
+        name: addressEdit,
+        builder: (context, state) {
+          final address = state.extra as Address;
+          return AddressEditPage(initialAddress: address);
+        },
+      ),
+      GoRoute(
         path: addressAdd,
+        name: addressAdd,
         builder: (context, state) => const AddressEditPage(),
       ),
       GoRoute(
-        path: addressEdit,
-        name: addressEdit,
-        builder: (context, state) => AddressEditPage(initialAddress: state.extra as Address?),
-      ),
-      GoRoute(
-        path: orderDetails,
-        name: orderDetails,
-        builder: (context, state) {
-          final orderId = state.pathParameters['orderId']!;
-          return OrderDetailsPage(orderId: orderId);
-        },
+        path: orderConfirmation,
+        name: orderConfirmation,
+        builder: (context, state) => const OrderConfirmationPage(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

@@ -1,106 +1,236 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
-import '../models/food.dart';
 import '../models/shop.dart';
+import '../models/food.dart';
+import '../services/index.dart';
 import '../services/api_service.dart';
+import '../services/shop_service.dart';
 
 ///
 /// 商店状态提供者 (已重构)
 ///
-/// 负责管理商店相关的数据，如商店列表和当前正在查看的商店详情。
-///
-/// 重构后的主要变更：
-/// - 所有数据获取都通过模拟的`ApiService`完成。
-/// - 状态管理被简化，只在内存中保存商店列表和当前商店信息。
+/// 负责管理商店列表、详情和菜单数据。
+/// 重构后与API规范对应
 ///
 class ShopProvider extends ChangeNotifier {
-  // API服务实例
-  final ApiService _api = ApiService();
+  // 服务实例
+  final ShopService _shopService = ShopService(ApiService());
 
   // 商店列表
   List<Shop> _shops = [];
-  // 当前查看的商店
+  // 当前商店
   Shop? _currentShop;
-  // 当前商店的菜单
-  List<Food> _foods = [];
-  // 是否正在加载数据
-  bool _isLoading = false;
-  // 是否正在加载特定商店
-  bool _isFetchingDetails = false;
-  // 是否正在加载菜单
-  bool _isFetchingFoods = false;
+  // 当前商店菜单
+  Map<String, List<Food>> _menu = {};
+  // 加载状态
+  bool _isLoadingShops = false;
+  bool _isLoadingMenu = false;
+  String? _error;
 
   // 获取商店列表
   List<Shop> get shops => _shops;
+
   // 获取当前商店
   Shop? get currentShop => _currentShop;
-  // 获取菜单列表
-  List<Food> get foods => _foods;
+
+  // 获取当前商店菜单
+  Map<String, List<Food>> get menu => _menu;
+
   // 获取加载状态
-  bool get isLoading => _isLoading;
-  // 获取详情加载状态
-  bool get isFetchingDetails => _isFetchingDetails;
-  // 获取菜单加载状态
-  bool get isFetchingFoods => _isFetchingFoods;
+  bool get isLoadingShops => _isLoadingShops;
+  bool get isLoadingMenu => _isLoadingMenu;
+  String? get error => _error;
 
-  /// 获取商店列表
-  Future<void> fetchShops({String? sortBy}) async {
-    _isLoading = true;
+  // 获取附近商店列表
+  Future<void> getNearbyShops({required double latitude, required double longitude, int? maxDistance}) async {
+    _isLoadingShops = true;
+    _error = null;
     notifyListeners();
 
     try {
-      _shops = await _api.getShopList(sortBy: sortBy);
-    } catch (e) {
-      debugPrint('获取商店列表失败: $e');
-      _shops = [];
-    } finally {
-      _isLoading = false;
+      final shopsList = await _shopService.getNearbyShops(
+        latitude: latitude, 
+        longitude: longitude,
+        maxDistance: maxDistance,
+      );
+
+      _shops = shopsList.map((shopData) => Shop.fromJson(shopData)).toList();
+      _isLoadingShops = false;
       notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoadingShops = false;
+      notifyListeners();
+      debugPrint('获取附近商店列表失败: $e');
+      rethrow;
     }
   }
 
-  /// 根据ID获取单个商店的详情
-  Future<void> fetchShopById(String shopId) async {
-    // 如果当前商店已经是目标商店，则不重复获取
-    if (_currentShop?.id == shopId) return;
-
-    _isFetchingDetails = true;
-    _currentShop = null; // 先清空，以显示加载指示器
+  // 按城市获取商店
+  Future<void> getShopsByCity({required String city}) async {
+    _isLoadingShops = true;
+    _error = null;
     notifyListeners();
 
     try {
-      _currentShop = await _api.getShopDetails(shopId);
-    } catch (e) {
-      debugPrint('获取商店详情失败: $e');
-      _currentShop = null;
-    } finally {
-      _isFetchingDetails = false;
+      final shopsList = await _shopService.getShopsByCity(city: city);
+      _shops = shopsList.map((shopData) => Shop.fromJson(shopData)).toList();
+      _isLoadingShops = false;
       notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoadingShops = false;
+      notifyListeners();
+      debugPrint('按城市获取商店列表失败: $e');
+      rethrow;
     }
   }
 
-  /// 获取商店菜单
-  Future<void> fetchFoods(String shopId) async {
-    _isFetchingFoods = true;
-    _foods = [];
+  // 按城市和区县获取商店
+  Future<void> getShopsByCityAndDistrict({required String city, required String district}) async {
+    _isLoadingShops = true;
+    _error = null;
     notifyListeners();
 
     try {
-      _foods = await _api.getFoodList(shopId);
+      final shopsList = await _shopService.getShopsByCityAndDistrict(city: city, district: district);
+      _shops = shopsList.map((shopData) => Shop.fromJson(shopData)).toList();
+      _isLoadingShops = false;
+      notifyListeners();
     } catch (e) {
+      _error = e.toString();
+      _isLoadingShops = false;
+      notifyListeners();
+      debugPrint('按城市和区县获取商店列表失败: $e');
+      rethrow;
+    }
+  }
+
+  // 获取商店详情
+  Future<void> getShopDetails(String shopId) async {
+    _isLoadingMenu = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      debugPrint('开始获取商店详情: $shopId');
+      final shopDetails = await _shopService.getShopDetails(shopId: shopId);
+      _currentShop = Shop.fromJson(shopDetails);
+      
+      _menu = {};
+      
+      // 处理菜单数据
+      if (shopDetails.containsKey('productsByCategory')) {
+        debugPrint('处理商店菜单分类数据');
+        final categories = shopDetails['categories'] ?? [];
+        final productsByCategory = shopDetails['productsByCategory'] ?? {};
+        
+        debugPrint('分类: $categories');
+        debugPrint('商品分类映射: $productsByCategory');
+        
+        // 遍历分类，从productsByCategory中获取对应的商品列表
+        if (categories is List) {
+          for (var category in categories) {
+            final categoryName = category.toString();
+            final products = productsByCategory[categoryName];
+            
+            debugPrint('处理分类 $categoryName 的商品');
+            
+            if (products is List) {
+              try {
+                _menu[categoryName] = products.map((product) {
+                  // 添加必要的默认值确保模型不会抛出异常
+                  if (product is Map<String, dynamic>) {
+                    return Food.fromJson(product);
+                  } else {
+                    debugPrint('无效的商品数据: $product');
+                    return Food(
+                      id: '',
+                      storeId: shopId,
+                      name: '无效商品',
+                      price: 0.0,
+                      category: categoryName,
+                      description: '',
+                      imageUrl: '',
+                      status: '',
+                      monthSales: 0,
+                      totalSales: 0,
+                    );
+                  }
+                }).toList();
+                debugPrint('分类 $categoryName 添加了 ${_menu[categoryName]!.length} 个商品');
+              } catch (e) {
+                debugPrint('解析分类 $categoryName 的商品时出错: $e');
+                _menu[categoryName] = [];
+              }
+            } else {
+              _menu[categoryName] = [];
+              debugPrint('分类 $categoryName 没有商品数据');
+            }
+          }
+        }
+      } else {
+        // 如果没有分类数据，尝试直接获取菜单
+        debugPrint('商店详情中无菜单分类数据，尝试获取菜单');
+        await getShopMenu(shopId);
+      }
+      
+      _isLoadingMenu = false;
+      notifyListeners();
+      debugPrint('商店详情和菜单加载完成');
+    } catch (e) {
+      _error = e.toString();
+      _isLoadingMenu = false;
+      notifyListeners();
+      debugPrint('加载商店详情时出错: $e');
+      // 不要再抛出异常，让UI能够显示错误信息
+    }
+  }
+
+  // 获取商店菜单
+  Future<void> getShopMenu(String shopId) async {
+    _isLoadingMenu = true;
+    if (_menu.isEmpty) {
+      _menu = {};
+    }
+    notifyListeners();
+
+    try {
+      final menuList = await _shopService.getShopMenu(shopId: shopId);
+      
+      // 将菜单按分类进行分组
+      for (var item in menuList) {
+        try {
+          final food = Food.fromJson(item);
+          final category = food.category;
+          
+          if (!_menu.containsKey(category)) {
+            _menu[category] = [];
+          }
+          
+          _menu[category]!.add(food);
+        } catch (e) {
+          debugPrint('解析菜品时出错: $e');
+        }
+      }
+      
+      _isLoadingMenu = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoadingMenu = false;
+      notifyListeners();
       debugPrint('获取商店菜单失败: $e');
-      _foods = [];
-    } finally {
-      _isFetchingFoods = false;
-      notifyListeners();
+      // 不要再抛出异常
     }
   }
 
-  /// 清除当前商店详情和菜单
-  /// 在离开商店页面时调用，以释放内存
+  // 清除当前商店
   void clearCurrentShop() {
     _currentShop = null;
-    _foods = [];
+    _menu = {};
+    _error = null;
     notifyListeners();
   }
 }

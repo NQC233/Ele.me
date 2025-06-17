@@ -11,6 +11,58 @@
 - **HTTP 客户端 (预留)**: [Dio](https://pub.dev/packages/dio)
 - **其他库**: `cached_network_image`, `intl`, `uuid`, 等.
 
+## 业务流程
+
+```plantuml
+@startuml
+title 外卖平台核心业务流程 (简化版)
+
+|用户端 (Flutter App)|
+start
+:浏览商家与菜品;
+:将菜品信息(ID, 数量)加入本地购物车;
+:进入结算页面，确认商品列表;
+:点击"下单";
+
+|系统 (Spring Cloud Backend)|
+:接收下单请求(含商品列表、用户ID);
+:创建订单(初始状态: PENDING_PAYMENT);
+
+if (用户选择使用优惠?) then (是)
+  :根据订单信息，查询可用优惠策略
+  (如优惠券、满减活动);
+  :应用优惠策略，重新计算订单总价;
+  :更新订单;
+else (否)
+endif
+
+|用户端 (Flutter App)|
+:确认订单信息和最终价格;
+:点击"支付";
+
+|系统 (Spring Cloud Backend)|
+:调用模拟支付接口;
+:接收支付成功回调;
+:将订单状态更新为 "已支付" (PAID);
+
+' == 以下为后台模拟的状态流转 ==
+partition "后台定时任务模拟" {
+    :等待一段时间后...;
+    :将订单状态更新为 "备餐中" (PREPARING);
+    :等待一段时间后...;
+    :将订单状态更新为 "配送中" (DELIVERING);
+    :等待一段时间后...;
+    :将订单状态更新为 "已送达" (COMPLETED);
+}
+
+|用户端 (Flutter App)|
+:在订单页面可随时查看订单状态的实时变化;
+stop
+
+@enduml
+```
+
+
 ## 当前状态
 
 **纯前端演示版**
@@ -88,3 +140,32 @@ lib/
   - 实现用户评价功能。
   - 增加真实的地图和订单追踪。
 - **UI/UX 优化**: 对页面细节进行打磨，增加更多动画效果，提升用户体验。
+
+## 重要配置说明
+
+### 后端API连接
+
+本项目默认配置连接到后端API的URL为：`http://localhost:9000`
+
+为解决Flutter Web开发模式下端口变动导致的CORS问题，我们在ApiService中固定了后端访问地址。如果需要修改后端地址，请编辑`lib/services/api_service.dart`文件中的`baseUrl`变量。
+
+```dart
+// 定义固定的后端URL，不管Flutter Web端口如何变动
+static const String baseUrl = 'http://localhost:9000';
+```
+
+请确保后端服务配置了正确的CORS允许规则，例如：
+
+```
+Access-Control-Allow-Origin: http://localhost:*
+```
+
+或明确指定允许的端口:
+
+```
+Access-Control-Allow-Origin: http://localhost:9000
+```
+
+## API文档
+
+API接口文档请参考`API.md`文件或`openapi.json`

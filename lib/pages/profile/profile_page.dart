@@ -12,86 +12,90 @@ import '../../config/app_theme.dart';
 /// 后续会在这里开发用户个人信息、设置等功能。
 ///
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('我的'),
-      ),
-      body: Consumer<UserProvider>(
-        builder: (context, userProvider, child) {
-          return ListView(
-            children: [
-              // 用户信息头部
-              userProvider.isLoggedIn
-                  ? _buildUserProfileHeader(context, userProvider)
-                  : _buildLoginHeader(context),
-              
-              const SizedBox(height: 10),
-
-              // 功能列表
-              _buildFeatureList(context),
-
-              // 退出登录按钮
-              if (userProvider.isLoggedIn) ...[
-                const SizedBox(height: 20),
-                _buildLogoutButton(context, userProvider),
-                const SizedBox(height: 20),
-              ]
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  // 未登录时显示的头部
-  Widget _buildLoginHeader(BuildContext context) {
-    return GestureDetector(
-      onTap: () => AppRoutes.router.go(AppRoutes.login),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        color: AppTheme.primaryColor,
-        child: const Row(
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, size: 40, color: AppTheme.primaryColor),
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, child) {
+        if (!userProvider.isLoggedIn) {
+          return Center(
+            child: ElevatedButton(
+              onPressed: () => AppRoutes.router.push(AppRoutes.login),
+              child: const Text('登录/注册'),
             ),
-            SizedBox(width: 15),
-            Text('登录 / 注册', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
+          );
+        }
+
+        final user = userProvider.user!;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('我的'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () => userProvider.logout(),
+              )
+            ],
+          ),
+          body: ListView(
+            children: <Widget>[
+              _buildHeader(context, user),
+              const SizedBox(height: 20),
+              _buildMenuItem(
+                icon: Icons.location_on_outlined,
+                title: '我的地址',
+                onTap: () => AppRoutes.router.push(AppRoutes.addressList),
+              ),
+              _buildMenuItem(
+                icon: Icons.receipt_long_outlined,
+                title: '我的订单',
+                onTap: () => AppRoutes.router.push(AppRoutes.orders),
+              ),
+              _buildMenuItem(
+                icon: Icons.help_outline,
+                title: '帮助中心',
+                onTap: () {},
+              ),
+              _buildMenuItem(
+                icon: Icons.settings_outlined,
+                title: '设置',
+                onTap: () {},
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  // 登录后显示的用户信息头部
-  Widget _buildUserProfileHeader(BuildContext context, UserProvider userProvider) {
-    final user = userProvider.user!;
+  Widget _buildHeader(BuildContext context, user) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      color: AppTheme.primaryColor,
+      padding: const EdgeInsets.all(20.0),
+      color: Theme.of(context).primaryColor,
       child: Row(
         children: [
           CircleAvatar(
-            radius: 30,
-            backgroundImage: user.avatar != null ? NetworkImage(user.avatar!) : null,
-            child: user.avatar == null 
-                ? const Icon(Icons.person, size: 40, color: AppTheme.primaryColor)
+            radius: 40,
+            backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
+            child: user.avatarUrl == null
+                ? const Icon(Icons.person, size: 40, color: Colors.white)
                 : null,
-            backgroundColor: Colors.white,
           ),
-          const SizedBox(width: 15),
+          const SizedBox(width: 20),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(user.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                user.username,
+                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 5),
-              Text(user.phone, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+              Text(
+                user.phone ?? user.email ?? '未设置联系方式',
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
             ],
           ),
         ],
@@ -99,45 +103,12 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // 功能列表
-  Widget _buildFeatureList(BuildContext context) {
-    return Column(
-      children: [
-        _buildListTile(context, Icons.receipt_long_outlined, '我的订单', () => AppRoutes.router.go(AppRoutes.orders)),
-        _buildListTile(context, Icons.location_on_outlined, '我的地址', () => AppRoutes.router.push(AppRoutes.addressList)),
-        _buildListTile(context, Icons.card_giftcard_outlined, '优惠券', () { /* TODO */ }),
-        const Divider(),
-        _buildListTile(context, Icons.support_agent_outlined, '客服中心', () { /* TODO */ }),
-        _buildListTile(context, Icons.settings_outlined, '设置', () { /* TODO */ }),
-      ],
-    );
-  }
-
-  // 创建单个列表项的辅助方法
-  Widget _buildListTile(BuildContext context, IconData icon, String title, VoidCallback onTap) {
+  Widget _buildMenuItem({required IconData icon, required String title, required VoidCallback onTap}) {
     return ListTile(
-      leading: Icon(icon, color: AppTheme.secondaryTextColor),
+      leading: Icon(icon),
       title: Text(title),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
-    );
-  }
-
-  // 退出登录按钮
-  Widget _buildLogoutButton(BuildContext context, UserProvider userProvider) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: OutlinedButton(
-        onPressed: () {
-          userProvider.logout();
-        },
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.red,
-          side: const BorderSide(color: Colors.red),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-        ),
-        child: const Text('退出登录'),
-      ),
     );
   }
 } 

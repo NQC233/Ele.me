@@ -1,0 +1,1303 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "API Documentation",
+    "version" : "1.0"
+  },
+  "paths" : {
+    "/stores/nearby" : {
+      "get" : {
+        "summary" : "获取附近门店列表",
+        "description" : "获取附近门店列表",
+        "parameters" : [ {
+          "name" : "longitude",
+          "in" : "query",
+          "description" : "经度",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "nullable" : false
+          }
+        }, {
+          "name" : "latitude",
+          "in" : "query",
+          "description" : "纬度",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "nullable" : false
+          }
+        }, {
+          "name" : "maxDistance",
+          "in" : "query",
+          "description" : "最大距离（米），默认3000",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "nullable" : false
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "返回数量限制，默认20",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "nullable" : false
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "门店列表",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "array",
+                      "description" : "数据",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "id" : {
+                            "type" : "string",
+                            "description" : "门店ID"
+                          },
+                          "name" : {
+                            "type" : "string",
+                            "description" : "门店名称"
+                          },
+                          "logoUrl" : {
+                            "type" : "string",
+                            "description" : "门店Logo URL"
+                          },
+                          "status" : {
+                            "type" : "string",
+                            "description" : "门店状态"
+                          },
+                          "minimumOrderAmount" : {
+                            "type" : "number",
+                            "description" : "最低起送价"
+                          },
+                          "deliveryFee" : {
+                            "type" : "number",
+                            "description" : "配送费"
+                          },
+                          "estimatedDeliveryTime" : {
+                            "type" : "integer",
+                            "description" : "预计配送时间(分钟)"
+                          },
+                          "distance" : {
+                            "type" : "integer",
+                            "description" : "距离用户的距离(米)"
+                          },
+                          "averageRating" : {
+                            "type" : "number",
+                            "description" : "平均评分"
+                          },
+                          "monthSales" : {
+                            "type" : "integer",
+                            "description" : "月销量"
+                          }
+                        },
+                        "description" : "门店列表项VO，用于列表展示"
+                      }
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  },
+                  "description" : "门店列表"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    "/stores/{storeId}" : {
+      "get" : {
+        "summary" : "获取门店详情",
+        "description" : "获取门店详情",
+        "parameters" : [ {
+          "name" : "storeId",
+          "in" : "path",
+          "description" : "门店ID",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "门店详情",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "object",
+                      "properties" : {
+                        "id" : {
+                          "type" : "string",
+                          "description" : "门店ID"
+                        },
+                        "name" : {
+                          "type" : "string",
+                          "description" : "门店名称"
+                        },
+                        "logoUrl" : {
+                          "type" : "string",
+                          "description" : "门店Logo URL"
+                        },
+                        "status" : {
+                          "type" : "string",
+                          "description" : "门店状态"
+                        },
+                        "province" : {
+                          "type" : "string",
+                          "description" : "省份"
+                        },
+                        "city" : {
+                          "type" : "string",
+                          "description" : "城市"
+                        },
+                        "district" : {
+                          "type" : "string",
+                          "description" : "区县"
+                        },
+                        "street" : {
+                          "type" : "string",
+                          "description" : "街道"
+                        },
+                        "detail" : {
+                          "type" : "string",
+                          "description" : "详细地址"
+                        },
+                        "longitude" : {
+                          "type" : "string",
+                          "description" : "经度"
+                        },
+                        "latitude" : {
+                          "type" : "string",
+                          "description" : "纬度"
+                        },
+                        "notice" : {
+                          "type" : "string",
+                          "description" : "门店公告"
+                        },
+                        "businessHours" : {
+                          "type" : "object",
+                          "properties" : {
+                            "key" : {
+                              "type" : "string"
+                            }
+                          },
+                          "description" : "营业时间"
+                        },
+                        "deliveryFee" : {
+                          "type" : "number",
+                          "description" : "配送费"
+                        },
+                        "minimumOrderAmount" : {
+                          "type" : "number",
+                          "description" : "起送价"
+                        },
+                        "estimatedDeliveryTime" : {
+                          "type" : "integer",
+                          "description" : "预计配送时间(分钟)"
+                        },
+                        "deliveryRange" : {
+                          "type" : "integer",
+                          "description" : "配送范围(米)"
+                        },
+                        "averageRating" : {
+                          "type" : "number",
+                          "description" : "平均评分"
+                        },
+                        "totalRatingCount" : {
+                          "type" : "integer",
+                          "description" : "总评分数"
+                        },
+                        "monthSales" : {
+                          "type" : "integer",
+                          "description" : "月销量"
+                        },
+                        "images" : {
+                          "type" : "array",
+                          "description" : "门店图片URL列表",
+                          "items" : {
+                            "type" : "string"
+                          }
+                        },
+                        "categories" : {
+                          "type" : "array",
+                          "description" : "商品分类列表",
+                          "items" : {
+                            "type" : "string"
+                          }
+                        },
+                        "productsByCategory" : {
+                          "type" : "object",
+                          "properties" : {
+                            "key" : {
+                              "type" : "array",
+                              "items" : {
+                                "type" : "object",
+                                "properties" : {
+                                  "id" : {
+                                    "type" : "string",
+                                    "description" : "商品ID"
+                                  },
+                                  "storeId" : {
+                                    "type" : "string",
+                                    "description" : "所属门店ID"
+                                  },
+                                  "name" : {
+                                    "type" : "string",
+                                    "description" : "商品名称"
+                                  },
+                                  "price" : {
+                                    "type" : "number",
+                                    "description" : "商品价格"
+                                  },
+                                  "category" : {
+                                    "type" : "string",
+                                    "description" : "商品分类"
+                                  },
+                                  "description" : {
+                                    "type" : "string",
+                                    "description" : "商品描述"
+                                  },
+                                  "imageUrl" : {
+                                    "type" : "string",
+                                    "description" : "商品图片URL"
+                                  },
+                                  "status" : {
+                                    "type" : "string",
+                                    "description" : "商品状态"
+                                  },
+                                  "monthSales" : {
+                                    "type" : "integer",
+                                    "description" : "月销量"
+                                  },
+                                  "totalSales" : {
+                                    "type" : "integer",
+                                    "description" : "总销量"
+                                  },
+                                  "tags" : {
+                                    "type" : "array",
+                                    "description" : "商品标签",
+                                    "items" : {
+                                      "type" : "string"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "description" : "分类商品映射，key为分类名，value为该分类下的商品"
+                        }
+                      },
+                      "description" : "数据"
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  },
+                  "description" : "门店详情"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stores/cityAndDistrict" : {
+      "get" : {
+        "summary" : "按城市和区县查询门店列表",
+        "description" : "按城市和区县查询门店列表",
+        "parameters" : [ {
+          "name" : "city",
+          "in" : "query",
+          "description" : "城市",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "nullable" : false
+          }
+        }, {
+          "name" : "district",
+          "in" : "query",
+          "description" : "区县",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "nullable" : false
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "门店列表",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "array",
+                      "description" : "数据",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "id" : {
+                            "type" : "string",
+                            "description" : "门店ID"
+                          },
+                          "name" : {
+                            "type" : "string",
+                            "description" : "门店名称"
+                          },
+                          "logoUrl" : {
+                            "type" : "string",
+                            "description" : "门店Logo URL"
+                          },
+                          "province" : {
+                            "type" : "string",
+                            "description" : "省份"
+                          },
+                          "city" : {
+                            "type" : "string",
+                            "description" : "城市"
+                          },
+                          "district" : {
+                            "type" : "string",
+                            "description" : "区县"
+                          },
+                          "street" : {
+                            "type" : "string",
+                            "description" : "街道"
+                          },
+                          "detail" : {
+                            "type" : "string",
+                            "description" : "详细地址"
+                          },
+                          "longitude" : {
+                            "type" : "string",
+                            "description" : "经度"
+                          },
+                          "latitude" : {
+                            "type" : "string",
+                            "description" : "纬度"
+                          },
+                          "status" : {
+                            "type" : "string",
+                            "description" : "门店状态(OPEN-营业中,CLOSED-已关闭)"
+                          },
+                          "notice" : {
+                            "type" : "string",
+                            "description" : "门店公告"
+                          },
+                          "businessHoursJson" : {
+                            "type" : "string",
+                            "description" : "营业时间JSON"
+                          },
+                          "deliveryFee" : {
+                            "type" : "number",
+                            "description" : "配送费"
+                          },
+                          "minimumOrderAmount" : {
+                            "type" : "number",
+                            "description" : "起送价"
+                          },
+                          "estimatedDeliveryTime" : {
+                            "type" : "integer",
+                            "description" : "预计配送时间(分钟)"
+                          },
+                          "deliveryRange" : {
+                            "type" : "integer",
+                            "description" : "配送范围(米)"
+                          }
+                        },
+                        "description" : "门店实体类"
+                      }
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  },
+                  "description" : "门店列表"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stores/{storeId}" : {
+      "get" : {
+        "summary" : "获取门店详情",
+        "description" : "获取门店详情",
+        "parameters" : [ {
+          "name" : "storeId",
+          "in" : "path",
+          "description" : "门店ID",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "门店详情",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "object",
+                      "properties" : {
+                        "id" : {
+                          "type" : "string",
+                          "description" : "门店ID"
+                        },
+                        "name" : {
+                          "type" : "string",
+                          "description" : "门店名称"
+                        },
+                        "logoUrl" : {
+                          "type" : "string",
+                          "description" : "门店Logo URL"
+                        },
+                        "status" : {
+                          "type" : "string",
+                          "description" : "门店状态"
+                        },
+                        "province" : {
+                          "type" : "string",
+                          "description" : "省份"
+                        },
+                        "city" : {
+                          "type" : "string",
+                          "description" : "城市"
+                        },
+                        "district" : {
+                          "type" : "string",
+                          "description" : "区县"
+                        },
+                        "street" : {
+                          "type" : "string",
+                          "description" : "街道"
+                        },
+                        "detail" : {
+                          "type" : "string",
+                          "description" : "详细地址"
+                        },
+                        "longitude" : {
+                          "type" : "string",
+                          "description" : "经度"
+                        },
+                        "latitude" : {
+                          "type" : "string",
+                          "description" : "纬度"
+                        },
+                        "notice" : {
+                          "type" : "string",
+                          "description" : "门店公告"
+                        },
+                        "businessHours" : {
+                          "type" : "object",
+                          "properties" : {
+                            "key" : {
+                              "type" : "string"
+                            }
+                          },
+                          "description" : "营业时间"
+                        },
+                        "deliveryFee" : {
+                          "type" : "number",
+                          "description" : "配送费"
+                        },
+                        "minimumOrderAmount" : {
+                          "type" : "number",
+                          "description" : "起送价"
+                        },
+                        "estimatedDeliveryTime" : {
+                          "type" : "integer",
+                          "description" : "预计配送时间(分钟)"
+                        },
+                        "deliveryRange" : {
+                          "type" : "integer",
+                          "description" : "配送范围(米)"
+                        },
+                        "averageRating" : {
+                          "type" : "number",
+                          "description" : "平均评分"
+                        },
+                        "totalRatingCount" : {
+                          "type" : "integer",
+                          "description" : "总评分数"
+                        },
+                        "monthSales" : {
+                          "type" : "integer",
+                          "description" : "月销量"
+                        },
+                        "images" : {
+                          "type" : "array",
+                          "description" : "门店图片URL列表",
+                          "items" : {
+                            "type" : "string"
+                          }
+                        },
+                        "categories" : {
+                          "type" : "array",
+                          "description" : "商品分类列表",
+                          "items" : {
+                            "type" : "string"
+                          }
+                        },
+                        "productsByCategory" : {
+                          "type" : "object",
+                          "properties" : {
+                            "key" : {
+                              "type" : "array",
+                              "items" : {
+                                "type" : "object",
+                                "properties" : {
+                                  "id" : {
+                                    "type" : "string",
+                                    "description" : "商品ID"
+                                  },
+                                  "storeId" : {
+                                    "type" : "string",
+                                    "description" : "所属门店ID"
+                                  },
+                                  "name" : {
+                                    "type" : "string",
+                                    "description" : "商品名称"
+                                  },
+                                  "price" : {
+                                    "type" : "number",
+                                    "description" : "商品价格"
+                                  },
+                                  "category" : {
+                                    "type" : "string",
+                                    "description" : "商品分类"
+                                  },
+                                  "description" : {
+                                    "type" : "string",
+                                    "description" : "商品描述"
+                                  },
+                                  "imageUrl" : {
+                                    "type" : "string",
+                                    "description" : "商品图片URL"
+                                  },
+                                  "status" : {
+                                    "type" : "string",
+                                    "description" : "商品状态"
+                                  },
+                                  "monthSales" : {
+                                    "type" : "integer",
+                                    "description" : "月销量"
+                                  },
+                                  "totalSales" : {
+                                    "type" : "integer",
+                                    "description" : "总销量"
+                                  },
+                                  "tags" : {
+                                    "type" : "array",
+                                    "description" : "商品标签",
+                                    "items" : {
+                                      "type" : "string"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "description" : "分类商品映射，key为分类名，value为该分类下的商品"
+                        }
+                      },
+                      "description" : "数据"
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  },
+                  "description" : "门店详情"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stores/{storeId}/products" : {
+      "get" : {
+        "summary" : "获取门店商品列表",
+        "description" : "获取门店商品列表",
+        "parameters" : [ {
+          "name" : "storeId",
+          "in" : "path",
+          "description" : "门店ID",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "商品列表",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "array",
+                      "description" : "数据",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "id" : {
+                            "type" : "string",
+                            "description" : "商品ID"
+                          },
+                          "storeId" : {
+                            "type" : "string",
+                            "description" : "所属门店ID"
+                          },
+                          "name" : {
+                            "type" : "string",
+                            "description" : "商品名称"
+                          },
+                          "price" : {
+                            "type" : "number",
+                            "description" : "商品价格"
+                          },
+                          "category" : {
+                            "type" : "string",
+                            "description" : "商品分类"
+                          },
+                          "description" : {
+                            "type" : "string",
+                            "description" : "商品描述"
+                          },
+                          "imageUrl" : {
+                            "type" : "string",
+                            "description" : "商品图片URL"
+                          },
+                          "status" : {
+                            "type" : "string",
+                            "description" : "商品状态"
+                          },
+                          "monthSales" : {
+                            "type" : "integer",
+                            "description" : "月销量"
+                          },
+                          "totalSales" : {
+                            "type" : "integer",
+                            "description" : "总销量"
+                          },
+                          "tags" : {
+                            "type" : "array",
+                            "description" : "商品标签",
+                            "items" : {
+                              "type" : "string"
+                            }
+                          }
+                        },
+                        "description" : "商品VO，用于商品信息展示"
+                      }
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  },
+                  "description" : "商品列表"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stores/{storeId}/products/page" : {
+      "get" : {
+        "summary" : "分页获取门店商品列表",
+        "description" : "分页获取门店商品列表",
+        "parameters" : [ {
+          "name" : "storeId",
+          "in" : "path",
+          "description" : "门店ID",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "description" : "页码，从0开始",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "nullable" : false,
+            "default" : "0"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "description" : "每页大小",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "nullable" : false,
+            "default" : "10"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "分页商品列表",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "object",
+                      "properties" : {
+                        "key" : {
+                          "type" : "object",
+                          "properties" : { }
+                        }
+                      },
+                      "description" : "数据"
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  },
+                  "description" : "分页商品列表"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+  },
+  "components" : {
+    "schemas" : {
+      "门店列表项VO，用于列表展示" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "门店ID"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "门店名称"
+          },
+          "logoUrl" : {
+            "type" : "string",
+            "description" : "门店Logo URL"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "门店状态"
+          },
+          "minimumOrderAmount" : {
+            "type" : "number",
+            "description" : "最低起送价"
+          },
+          "deliveryFee" : {
+            "type" : "number",
+            "description" : "配送费"
+          },
+          "estimatedDeliveryTime" : {
+            "type" : "integer",
+            "description" : "预计配送时间(分钟)"
+          },
+          "distance" : {
+            "type" : "integer",
+            "description" : "距离用户的距离(米)"
+          },
+          "averageRating" : {
+            "type" : "number",
+            "description" : "平均评分"
+          },
+          "monthSales" : {
+            "type" : "integer",
+            "description" : "月销量"
+          }
+        },
+        "description" : "门店列表项VO，用于列表展示"
+      },
+      "门店详情VO，用于门店详情展示" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "门店ID"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "门店名称"
+          },
+          "logoUrl" : {
+            "type" : "string",
+            "description" : "门店Logo URL"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "门店状态"
+          },
+          "province" : {
+            "type" : "string",
+            "description" : "省份"
+          },
+          "city" : {
+            "type" : "string",
+            "description" : "城市"
+          },
+          "district" : {
+            "type" : "string",
+            "description" : "区县"
+          },
+          "street" : {
+            "type" : "string",
+            "description" : "街道"
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "详细地址"
+          },
+          "longitude" : {
+            "type" : "string",
+            "description" : "经度"
+          },
+          "latitude" : {
+            "type" : "string",
+            "description" : "纬度"
+          },
+          "notice" : {
+            "type" : "string",
+            "description" : "门店公告"
+          },
+          "businessHours" : {
+            "type" : "object",
+            "properties" : {
+              "key" : {
+                "type" : "string"
+              }
+            },
+            "description" : "营业时间"
+          },
+          "deliveryFee" : {
+            "type" : "number",
+            "description" : "配送费"
+          },
+          "minimumOrderAmount" : {
+            "type" : "number",
+            "description" : "起送价"
+          },
+          "estimatedDeliveryTime" : {
+            "type" : "integer",
+            "description" : "预计配送时间(分钟)"
+          },
+          "deliveryRange" : {
+            "type" : "integer",
+            "description" : "配送范围(米)"
+          },
+          "averageRating" : {
+            "type" : "number",
+            "description" : "平均评分"
+          },
+          "totalRatingCount" : {
+            "type" : "integer",
+            "description" : "总评分数"
+          },
+          "monthSales" : {
+            "type" : "integer",
+            "description" : "月销量"
+          },
+          "images" : {
+            "type" : "array",
+            "description" : "门店图片URL列表",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "categories" : {
+            "type" : "array",
+            "description" : "商品分类列表",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "productsByCategory" : {
+            "type" : "object",
+            "properties" : {
+              "key" : {
+                "type" : "array",
+                "items" : {
+                  "type" : "object",
+                  "properties" : {
+                    "id" : {
+                      "type" : "string",
+                      "description" : "商品ID"
+                    },
+                    "storeId" : {
+                      "type" : "string",
+                      "description" : "所属门店ID"
+                    },
+                    "name" : {
+                      "type" : "string",
+                      "description" : "商品名称"
+                    },
+                    "price" : {
+                      "type" : "number",
+                      "description" : "商品价格"
+                    },
+                    "category" : {
+                      "type" : "string",
+                      "description" : "商品分类"
+                    },
+                    "description" : {
+                      "type" : "string",
+                      "description" : "商品描述"
+                    },
+                    "imageUrl" : {
+                      "type" : "string",
+                      "description" : "商品图片URL"
+                    },
+                    "status" : {
+                      "type" : "string",
+                      "description" : "商品状态"
+                    },
+                    "monthSales" : {
+                      "type" : "integer",
+                      "description" : "月销量"
+                    },
+                    "totalSales" : {
+                      "type" : "integer",
+                      "description" : "总销量"
+                    },
+                    "tags" : {
+                      "type" : "array",
+                      "description" : "商品标签",
+                      "items" : {
+                        "type" : "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description" : "分类商品映射，key为分类名，value为该分类下的商品"
+          }
+        },
+        "description" : "数据"
+      },
+      "门店实体类" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "门店ID"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "门店名称"
+          },
+          "logoUrl" : {
+            "type" : "string",
+            "description" : "门店Logo URL"
+          },
+          "province" : {
+            "type" : "string",
+            "description" : "省份"
+          },
+          "city" : {
+            "type" : "string",
+            "description" : "城市"
+          },
+          "district" : {
+            "type" : "string",
+            "description" : "区县"
+          },
+          "street" : {
+            "type" : "string",
+            "description" : "街道"
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "详细地址"
+          },
+          "longitude" : {
+            "type" : "string",
+            "description" : "经度"
+          },
+          "latitude" : {
+            "type" : "string",
+            "description" : "纬度"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "门店状态(OPEN-营业中,CLOSED-已关闭)"
+          },
+          "notice" : {
+            "type" : "string",
+            "description" : "门店公告"
+          },
+          "businessHoursJson" : {
+            "type" : "string",
+            "description" : "营业时间JSON"
+          },
+          "deliveryFee" : {
+            "type" : "number",
+            "description" : "配送费"
+          },
+          "minimumOrderAmount" : {
+            "type" : "number",
+            "description" : "起送价"
+          },
+          "estimatedDeliveryTime" : {
+            "type" : "integer",
+            "description" : "预计配送时间(分钟)"
+          },
+          "deliveryRange" : {
+            "type" : "integer",
+            "description" : "配送范围(米)"
+          }
+        },
+        "description" : "门店引用"
+      },
+      "商品VO，用于商品信息展示" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "商品ID"
+          },
+          "storeId" : {
+            "type" : "string",
+            "description" : "所属门店ID"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "商品名称"
+          },
+          "price" : {
+            "type" : "number",
+            "description" : "商品价格"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "商品分类"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "商品描述"
+          },
+          "imageUrl" : {
+            "type" : "string",
+            "description" : "商品图片URL"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "商品状态"
+          },
+          "monthSales" : {
+            "type" : "integer",
+            "description" : "月销量"
+          },
+          "totalSales" : {
+            "type" : "integer",
+            "description" : "总销量"
+          },
+          "tags" : {
+            "type" : "array",
+            "description" : "商品标签",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        },
+        "description" : "数据"
+      },
+      "商品实体类" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "商品ID"
+          },
+          "storeId" : {
+            "type" : "string",
+            "description" : "所属门店ID"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "商品名称"
+          },
+          "price" : {
+            "type" : "number",
+            "description" : "商品价格"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "商品分类"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "商品描述"
+          },
+          "imageUrl" : {
+            "type" : "string",
+            "description" : "商品图片URL"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "商品状态(ACTIVE-在售,INACTIVE-下架)"
+          },
+          "store" : {
+            "type" : "object",
+            "properties" : {
+              "id" : {
+                "type" : "string",
+                "description" : "门店ID"
+              },
+              "name" : {
+                "type" : "string",
+                "description" : "门店名称"
+              },
+              "logoUrl" : {
+                "type" : "string",
+                "description" : "门店Logo URL"
+              },
+              "province" : {
+                "type" : "string",
+                "description" : "省份"
+              },
+              "city" : {
+                "type" : "string",
+                "description" : "城市"
+              },
+              "district" : {
+                "type" : "string",
+                "description" : "区县"
+              },
+              "street" : {
+                "type" : "string",
+                "description" : "街道"
+              },
+              "detail" : {
+                "type" : "string",
+                "description" : "详细地址"
+              },
+              "longitude" : {
+                "type" : "string",
+                "description" : "经度"
+              },
+              "latitude" : {
+                "type" : "string",
+                "description" : "纬度"
+              },
+              "status" : {
+                "type" : "string",
+                "description" : "门店状态(OPEN-营业中,CLOSED-已关闭)"
+              },
+              "notice" : {
+                "type" : "string",
+                "description" : "门店公告"
+              },
+              "businessHoursJson" : {
+                "type" : "string",
+                "description" : "营业时间JSON"
+              },
+              "deliveryFee" : {
+                "type" : "number",
+                "description" : "配送费"
+              },
+              "minimumOrderAmount" : {
+                "type" : "number",
+                "description" : "起送价"
+              },
+              "estimatedDeliveryTime" : {
+                "type" : "integer",
+                "description" : "预计配送时间(分钟)"
+              },
+              "deliveryRange" : {
+                "type" : "integer",
+                "description" : "配送范围(米)"
+              }
+            },
+            "description" : "门店引用"
+          }
+        },
+        "description" : "数据"
+      }
+    }
+  }
+}

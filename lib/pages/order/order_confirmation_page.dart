@@ -8,197 +8,189 @@ import '../../providers/order_provider.dart';
 import '../../models/address.dart';
 import '../../widgets/common/loading_indicator.dart';
 import '../../routes/app_routes.dart';
-import '../../config/app_theme.dart';
 
 ///
-/// 订单确认页面
+/// 订单确认页面 (已重构)
 ///
 /// 用户在此页面确认订单信息，包括地址、商品、费用和备注，并最终提交订单。
+/// 重构后使用真实API计算价格，显示优惠信息。
 ///
 class OrderConfirmationPage extends StatefulWidget {
-  const OrderConfirmationPage({Key? key}) : super(key: key);
+  const OrderConfirmationPage({super.key});
 
   @override
   State<OrderConfirmationPage> createState() => _OrderConfirmationPageState();
 }
 
 class _OrderConfirmationPageState extends State<OrderConfirmationPage> {
-  final _remarkController = TextEditingController();
+  Address? _selectedAddress;
+  String? _remark;
 
   @override
-  void dispose() {
-    _remarkController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (userProvider.isLoggedIn) {
+      _selectedAddress = userProvider.defaultAddress;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+
+    if (cartProvider.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: Text("购物车是空的，无法下单")),
+      );
+    }
+    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('确认订单'),
-      ),
-      body: Consumer2<CartProvider, UserProvider>(
-        builder: (context, cartProvider, userProvider, child) {
-          if (cartProvider.cart == null) {
-            // 购物车为空，理论上不应到达此页
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) Navigator.of(context).pop();
-            });
-            return const Center(child: Text('购物车为空'));
-          }
-
-          final cart = cartProvider.cart!;
-          final defaultAddress = userProvider.defaultAddress;
-
-          if (defaultAddress == null) {
-            return const Center(child: Text('请先设置一个默认地址'));
-          }
-
-          return Column(
-            children: [
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(16.0),
-                  children: [
-                    _buildAddressSection(context, defaultAddress),
-                    const SizedBox(height: 16),
-                    _buildOrderItemsSection(context),
-                    const SizedBox(height: 16),
-                    _buildRemarkSection(context),
-                  ],
-                ),
-              ),
-              _buildSubmitBar(context),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  // 地址区域
-  Widget _buildAddressSection(BuildContext context, Address address) {
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.location_on_outlined, color: AppTheme.primaryColor),
-        title: Text('${address.province} ${address.city} ${address.detail}'),
-        subtitle: Text('${address.name} ${address.phone}'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          // TODO: 实现地址选择功能
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('地址选择功能待开发')));
-        },
-      ),
-    );
-  }
-
-  // 商品清单区域
-  Widget _buildOrderItemsSection(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context, listen: false).cart!;
-    return Card(
-      child: Padding(
+      appBar: AppBar(title: const Text('确认订单')),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(cart.shopName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const Divider(height: 24),
-            ...cart.items.map((item) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('${item.food.name} x${item.quantity}'),
-                  Text('¥${(item.food.price * item.quantity).toStringAsFixed(2)}'),
-                ],
-              ),
-            )),
-            const Divider(height: 24),
-            _buildFeeRow('商品总额', '¥${cart.totalPrice.toStringAsFixed(2)}'),
-            _buildFeeRow('配送费', '¥5.00'), // 示例费用
-            _buildFeeRow('包装费', '¥2.00'), // 示例费用
+            _buildAddressSection(context, userProvider),
+            const Divider(height: 32),
+            _buildOrderItems(context, cartProvider),
+            const Divider(height: 32),
+            _buildPriceDetails(context, cartProvider),
+            const Divider(height: 32),
+            _buildRemarkSection(),
           ],
         ),
       ),
+      bottomNavigationBar: _buildBottomBar(context),
     );
   }
 
-  // 费用行
-  Widget _buildFeeRow(String label, String value) {
+  Widget _buildAddressSection(BuildContext context, UserProvider userProvider) {
+    if (_selectedAddress == null) {
+      return ListTile(
+        title: const Text('请选择收货地址'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () async {
+          final result = await context.push<Address>(AppRoutes.addressList);
+          if (result != null) {
+            setState(() {
+              _selectedAddress = result;
+            });
+          }
+        },
+      );
+    }
+
+    return ListTile(
+      title: Text('${_selectedAddress!.receiverName} ${_selectedAddress!.receiverPhone}'),
+      subtitle: Text(_selectedAddress!.fullAddress),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () async {
+        final result = await context.push<Address>(AppRoutes.addressList);
+        if (result != null) {
+          setState(() {
+            _selectedAddress = result;
+          });
+        }
+      },
+    );
+  }
+
+  Widget _buildOrderItems(BuildContext context, CartProvider cartProvider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(cartProvider.cart.shopName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        ...cartProvider.cart.items.map((item) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Row(
+              children: [
+                Image.network(item.food.imageUrl, width: 50, height: 50, fit: BoxFit.cover),
+                const SizedBox(width: 16),
+                Expanded(child: Text(item.food.name)),
+                Text('x${item.quantity}'),
+                const SizedBox(width: 16),
+                Text('¥${(item.food.price * item.quantity).toStringAsFixed(2)}'),
+              ],
+            ),
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  Widget _buildPriceDetails(BuildContext context, CartProvider cartProvider) {
+    return Column(
+      children: [
+        _buildPriceRow('商品总价', '¥${cartProvider.totalPrice.toStringAsFixed(2)}'),
+        _buildPriceRow('配送费', '¥${cartProvider.deliveryFee.toStringAsFixed(2)}'),
+      ],
+    );
+  }
+
+  Widget _buildPriceRow(String title, String amount) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppTheme.secondaryTextColor)),
-          Text(value),
+          Text(title),
+          Text(amount),
         ],
       ),
     );
   }
 
-  // 备注区域
-  Widget _buildRemarkSection(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: TextField(
-          controller: _remarkController,
-          decoration: const InputDecoration(
-            hintText: '口味、偏好等要求',
-            border: InputBorder.none,
-          ),
-          maxLines: 2,
-        ),
+  Widget _buildRemarkSection() {
+    return TextField(
+      decoration: const InputDecoration(
+        hintText: '给商家留言...',
+        border: OutlineInputBorder(),
       ),
+      onChanged: (value) {
+        _remark = value;
+      },
     );
   }
 
-  // 底部提交栏
-  Widget _buildSubmitBar(BuildContext context) {
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    const deliveryFee = 5.0;
-    const packingFee = 2.0;
-    final totalPrice = cartProvider.totalPrice + deliveryFee + packingFee;
+  Widget _buildBottomBar(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
+    final userProvider = Provider.of<UserProvider>(context);
+    final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+
+    final totalAmount = cartProvider.totalPrice + cartProvider.deliveryFee;
 
     return Container(
       padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -2))],
-      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          RichText(
-            text: TextSpan(
-              text: '合计: ', style: const TextStyle(fontSize: 16, color: AppTheme.textColor),
-              children: <TextSpan>[
-                TextSpan(text: '¥${totalPrice.toStringAsFixed(2)}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
-              ],
-            ),
-          ),
+          Text('总计: ¥${totalAmount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ElevatedButton(
-            onPressed: () async {
-              final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-              final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-              await orderProvider.createOrder(
-                cart: cartProvider.cart!,
-                address: userProvider.defaultAddress!,
-                remark: _remarkController.text,
-              );
-              
-              if(mounted) {
-                // 清空购物车
-                cartProvider.clearCart();
-                // 提示成功并返回首页
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('订单提交成功!')));
-                AppRoutes.router.go(AppRoutes.home);
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
-            child: const Text('提交订单', style: TextStyle(fontSize: 16, color: Colors.white)),
+            onPressed: (userProvider.isLoading || _selectedAddress == null)
+                ? null
+                : () async {
+                    final order = await orderProvider.createOrder(
+                      userId: userProvider.user!.id,
+                      cart: cartProvider.cart,
+                      address: _selectedAddress!,
+                      remark: _remark,
+                    );
+                    if (order != null && mounted) {
+                      cartProvider.clearCart();
+                      context.go('${AppRoutes.orderDetail}/${order.id}');
+                    } else if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('下单失败: ${orderProvider.error ?? '未知错误'}')),
+                      );
+                    }
+                  },
+            child: orderProvider.isLoading ? const LoadingIndicator(size: 20) : const Text('提交订单'),
           ),
         ],
       ),

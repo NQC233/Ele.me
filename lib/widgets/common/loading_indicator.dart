@@ -8,8 +8,9 @@ import '../../config/app_theme.dart';
 ///
 class LoadingIndicator extends StatelessWidget {
   final String? text;
+  final double size;
 
-  const LoadingIndicator({Key? key, this.text}) : super(key: key);
+  const LoadingIndicator({super.key, this.text, this.size = 50});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class LoadingIndicator extends StatelessWidget {
         children: [
           LoadingAnimationWidget.staggeredDotsWave(
             color: AppTheme.primaryColor,
-            size: 50,
+            size: size,
           ),
           if (text != null) ...[
             const SizedBox(height: 20),

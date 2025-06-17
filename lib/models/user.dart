@@ -1,40 +1,35 @@
-import 'address.dart';
-
-// 用户模型类
 class User {
   final String id;
-  final String name;
-  final String phone;
-  final String? avatar;
+  final String username;
+  final String? phone;
   final String? email;
-  final List<Address> addresses;
+  final String? avatarUrl;
+  final String createdAt;
+  final List<String> addresses;
 
   // 构造函数
   User({
     required this.id,
-    required this.name,
-    required this.phone,
-    this.avatar,
+    required this.username,
+    this.phone,
     this.email,
+    this.avatarUrl,
+    required this.createdAt,
     this.addresses = const [],
   });
 
   // 从JSON解析
   factory User.fromJson(Map<String, dynamic> json) {
-    List<Address> addressList = [];
-    if (json['addresses'] != null) {
-      addressList = List<Address>.from(
-        json['addresses'].map((address) => Address.fromJson(address)),
-      );
-    }
-
     return User(
       id: json['id'] as String,
-      name: json['name'] as String,
-      phone: json['phone'] as String,
-      avatar: json['avatar'] as String?,
+      username: json['username'] as String,
+      phone: json['phone'] as String?,
       email: json['email'] as String?,
-      addresses: addressList,
+      avatarUrl: json['avatarUrl'] as String?,
+      createdAt: json['createdAt'] as String,
+      addresses: json['addresses'] != null 
+          ? List<String>.from(json['addresses']) 
+          : [],
     );
   }
 
@@ -42,29 +37,32 @@ class User {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
+      'username': username,
       'phone': phone,
-      'avatar': avatar,
       'email': email,
-      'addresses': addresses.map((address) => address.toJson()).toList(),
+      'avatarUrl': avatarUrl,
+      'createdAt': createdAt,
+      'addresses': addresses,
     };
   }
 
   // 创建副本并更新属性
   User copyWith({
     String? id,
-    String? name,
+    String? username,
     String? phone,
-    String? avatar,
     String? email,
-    List<Address>? addresses,
+    String? avatarUrl,
+    String? createdAt,
+    List<String>? addresses,
   }) {
     return User(
       id: id ?? this.id,
-      name: name ?? this.name,
+      username: username ?? this.username,
       phone: phone ?? this.phone,
-      avatar: avatar ?? this.avatar,
       email: email ?? this.email,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      createdAt: createdAt ?? this.createdAt,
       addresses: addresses ?? this.addresses,
     );
   }
