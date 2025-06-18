@@ -28,7 +28,7 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
     _tabController = TabController(length: 3, vsync: this);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (userProvider.isLoggedIn) {
-      Provider.of<OrderProvider>(context, listen: false).fetchOrders(userProvider.user!.id);
+      Provider.of<OrderProvider>(context, listen: false).getUserOrders(userProvider.user!.id);
     }
   }
 
@@ -59,12 +59,19 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
           }
 
           final allOrders = orderProvider.orders;
-          final processingOrders = orderProvider.getOrdersByStatus(OrderStatus.preparing)
-            ..addAll(orderProvider.getOrdersByStatus(OrderStatus.delivering))
-            ..addAll(orderProvider.getOrdersByStatus(OrderStatus.paid))
-            ..addAll(orderProvider.getOrdersByStatus(OrderStatus.pendingPayment));
           
-          final completedOrders = orderProvider.getOrdersByStatus(OrderStatus.completed);
+          // 筛选进行中的订单
+          final processingOrders = allOrders.where((order) => 
+            order.status == OrderStatus.pendingPayment ||
+            order.status == OrderStatus.paid ||
+            order.status == OrderStatus.preparing ||
+            order.status == OrderStatus.delivering
+          ).toList();
+          
+          // 筛选已完成的订单
+          final completedOrders = allOrders.where((order) => 
+            order.status == OrderStatus.completed
+          ).toList();
 
           return TabBarView(
             controller: _tabController,

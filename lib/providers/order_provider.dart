@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 import '../models/order.dart' as model;
 import '../models/cart.dart';
 import '../models/address.dart';
+import '../models/promotion.dart';
 import '../services/index.dart';
 import '../services/api_service.dart';
+import '../services/order_service.dart';
+import '../services/promotion_service.dart';
 
 ///
 /// 订单状态提供者 (已重构)
@@ -20,6 +23,7 @@ import '../services/api_service.dart';
 class OrderProvider extends ChangeNotifier {
   // 服务实例
   final OrderService _orderService = OrderService(ApiService());
+  final PromotionService _promotionService = PromotionService(ApiService());
 
   // 订单列表
   List<model.Order> _orders = [];
@@ -30,6 +34,8 @@ class OrderProvider extends ChangeNotifier {
   // 处理状态（支付、取消等）
   bool _isProcessing = false;
   String? _error;
+  List<Promotion> _availablePromotions = [];
+  List<UserCoupon> _userCoupons = [];
 
   // 获取订单列表
   List<model.Order> get orders => _orders;
@@ -45,84 +51,83 @@ class OrderProvider extends ChangeNotifier {
 
   String? get error => _error;
 
+  List<Promotion> get availablePromotions => _availablePromotions;
+  
+  List<UserCoupon> get userCoupons => _userCoupons;
+
   /// 根据用户ID获取订单列表
-  Future<void> fetchOrders(String userId, {String? status}) async {
+  Future<void> getUserOrders(String userId) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final ordersData = await _orderService.getOrders(userId: userId, status: status);
+      final ordersData = await _orderService.getUserOrders(userId: userId);
       _orders = ordersData.map((data) => model.Order.fromJson(data)).toList();
     } catch (e) {
       _error = e.toString();
-      _orders = [];
+      debugPrint('获取用户订单列表失败: $_error');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  /// 根据订单ID获取单个订单详情
-  Future<void> fetchOrderById(String orderId) async {
+  /// 获取订单详情
+  Future<model.Order?> getOrderDetail(String orderId) async {
     _isLoading = true;
-    _currentOrder = null; // 先清空旧数据
+    _error = null;
     notifyListeners();
 
     try {
       final orderData = await _orderService.getOrderDetail(orderId: orderId);
-      _currentOrder = model.Order.fromJson(orderData);
+      final order = model.Order.fromJson(orderData);
+      _currentOrder = order;
+      return order;
     } catch (e) {
-      debugPrint('获取订单详情失败: $e');
-      _currentOrder = null;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-  
-  /// 根据订单号获取订单详情
-  Future<void> fetchOrderByOrderNo(String orderNo) async {
-    _isLoading = true;
-    _currentOrder = null; // 先清空旧数据
-    notifyListeners();
-
-    try {
-      final orderData = await _orderService.getOrderByOrderNo(orderNo);
-      _currentOrder = model.Order.fromJson(orderData);
-    } catch (e) {
-      debugPrint('获取订单详情失败: $e');
-      _currentOrder = null;
+      _error = e.toString();
+      debugPrint('获取订单详情失败: $_error');
+      return null;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  /// 创建新订单
+  /// 创建订单
   Future<model.Order?> createOrder({
     required String userId,
     required Cart cart,
     required Address address,
     String? remark,
+    String? promotionId,
   }) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final newOrderData = await _orderService.createOrder(
+      final orderData = await _orderService.createOrder(
         userId: userId,
-        cart: cart,
-        address: address,
+        storeId: cart.shopId,
+        items: cart.items.map((item) => {
+          'productId': item.food.id,
+          'productName': item.food.name,
+          'price': item.food.price,
+          'quantity': item.quantity,
+        }).toList(),
+        address: address.toJson(),
         remark: remark,
+        promotionId: promotionId,
       );
-      final newOrder = model.Order.fromJson(newOrderData);
-      _orders.insert(0, newOrder);
-      _currentOrder = newOrder;
-      return newOrder;
+
+      final order = model.Order.fromJson(orderData);
+      _orders.insert(0, order);
+      _currentOrder = order;
+      return order;
     } catch (e) {
       _error = e.toString();
+      debugPrint('创建订单失败: $_error');
       return null;
     } finally {
       _isLoading = false;
@@ -131,17 +136,30 @@ class OrderProvider extends ChangeNotifier {
   }
   
   /// 支付订单
-  Future<bool> payOrder(String orderNo) async {
+  Future<bool> payOrder(String orderId, String paymentMethod) async {
     _isProcessing = true;
     notifyListeners();
     
     try {
-      final orderData = await _orderService.payOrder(orderNo);
-      // 更新订单状态
-      _updateOrderInList(orderData);
-      return true;
+      final success = await _orderService.payOrder(
+        orderId: orderId,
+        paymentMethod: paymentMethod,
+      );
+      
+      if (success && _currentOrder != null && _currentOrder!.id == orderId) {
+        _currentOrder = _currentOrder!.copyWithStatus('PAID');
+        
+        // 更新订单列表中的状态
+        final index = _orders.indexWhere((order) => order.id == orderId);
+        if (index != -1) {
+          _orders[index] = _orders[index].copyWithStatus('PAID');
+        }
+      }
+      
+      return success;
     } catch (e) {
-      debugPrint('支付订单失败: $e');
+      _error = e.toString();
+      debugPrint('支付订单失败: $_error');
       return false;
     } finally {
       _isProcessing = false;
@@ -155,12 +173,22 @@ class OrderProvider extends ChangeNotifier {
     notifyListeners();
     
     try {
-      final orderData = await _orderService.cancelOrder(orderId);
-      // 更新订单状态
-      _updateOrderInList(orderData);
-      return true;
+      final success = await _orderService.cancelOrder(orderId: orderId);
+      
+      if (success && _currentOrder != null && _currentOrder!.id == orderId) {
+        _currentOrder = _currentOrder!.copyWithStatus('CANCELLED');
+        
+        // 更新订单列表中的状态
+        final index = _orders.indexWhere((order) => order.id == orderId);
+        if (index != -1) {
+          _orders[index] = _orders[index].copyWithStatus('CANCELLED');
+        }
+      }
+      
+      return success;
     } catch (e) {
-      debugPrint('取消订单失败: $e');
+      _error = e.toString();
+      debugPrint('取消订单失败: $_error');
       return false;
     } finally {
       _isProcessing = false;
@@ -195,50 +223,87 @@ class OrderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 根据订单ID获取订单详情
-  Future<model.Order?> getOrderDetails(String orderId) async {
+  // 获取可用优惠
+  Future<void> getAvailablePromotions({
+    required String userId,
+    required String storeId,
+    required double totalAmount,
+    required List<Map<String, dynamic>> items,
+    String? couponId,
+  }) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final orderData = await _orderService.getOrderDetail(orderId: orderId);
-      _currentOrder = model.Order.fromJson(orderData);
-      return _currentOrder;
+      _availablePromotions = await _promotionService.getOrderPromotions(
+        userId: userId,
+        storeId: storeId,
+        totalAmount: totalAmount,
+        items: items,
+        couponId: couponId,
+      );
+      debugPrint('获取到 ${_availablePromotions.length} 个可用优惠');
     } catch (e) {
       _error = e.toString();
-      return null;
+      debugPrint('获取可用优惠失败: $_error');
+      _availablePromotions = [];
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
-
-  // 模拟计算订单价格
-  Future<Map<String, dynamic>?> calculateOrderPrice({
-    required Cart cart,
-    required String addressId,
-    String? couponId,
-  }) async {
-    // 在真实应用中，这里应该调用API
-    // 此处仅为模拟
+  
+  // 获取用户优惠券
+  Future<void> getUserCoupons(String userId) async {
+    // 先标记加载中，但不通知监听者
+    _isLoading = true;
+    _error = null;
+    
     try {
-      // 假设的API调用
-      // final priceDetails = await _orderService.calculatePrice(...);
-      // return priceDetails;
+      debugPrint('开始获取用户优惠券: userId=$userId');
       
-      // 模拟返回
-      await Future.delayed(const Duration(milliseconds: 500));
-      return {
-        'totalAmount': cart.totalPrice + 5.0, // 商品总价 + 运费
-        'payAmount': cart.totalPrice + 5.0 - 2.0, // 假设优惠2元
-        'discountAmount': 2.0,
-        'deliveryFee': 5.0,
-      };
+      // 如果网络请求失败，给予三次重试机会
+      int retries = 0;
+      const maxRetries = 3;
+      
+      while (retries < maxRetries) {
+        try {
+          // 获取优惠券数据
+          final coupons = await _promotionService.getUserCoupons(userId);
+          
+          // 成功获取数据后，再更新状态并通知监听者
+          _userCoupons = coupons;
+          _isLoading = false;
+          debugPrint('成功获取 ${_userCoupons.length} 个用户优惠券');
+          notifyListeners();
+          return;
+        } catch (e) {
+          retries++;
+          debugPrint('获取用户优惠券失败: $e (尝试 $retries/$maxRetries)');
+          
+          if (retries == maxRetries) {
+            rethrow; // 最后一次重试仍失败，抛出异常
+          }
+          
+          // 等待一段时间后重试
+          await Future.delayed(Duration(milliseconds: 500 * retries));
+        }
+      }
     } catch (e) {
+      // 出错时，设置错误信息并更新状态
       _error = e.toString();
+      _userCoupons = []; // 确保即使失败也有一个空列表，而不是null
+      _isLoading = false;
+      debugPrint('获取用户优惠券最终失败: $_error');
       notifyListeners();
-      return null;
+      rethrow; // 向上抛出错误，以便UI层可以显示错误信息
     }
+  }
+
+  // 清除当前订单
+  void clearCurrentOrder() {
+    _currentOrder = null;
+    notifyListeners();
   }
 }

@@ -4,11 +4,11 @@
     "title" : "API Documentation",
     "version" : "1.0"
   },
-  "paths" : {
-    "/promotions/applicable" : {
+  "paths": {
+    "/promotions/user/order-promotions" : {
       "post" : {
-        "summary" : "获取订单可用的优惠信息",
-        "description" : "获取订单可用的优惠信息",
+        "summary" : "获取用户特定订单的可用优惠信息 (用于结算页面)",
+        "description" : "获取用户特定订单的可用优惠信息 (用于结算页面)",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -67,14 +67,192 @@
                     "description" : "优惠券ID（如果使用）"
                   }
                 },
-                "description" : "订单快照"
+                "description" : "订单快照（包含完整的商品明细）"
               }
             }
           }
         },
         "responses" : {
           "200" : {
-            "description" : "可用优惠列表",
+            "description" : "用户视角的可用优惠列表",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "array",
+                      "description" : "数据",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "id" : {
+                            "type" : "string",
+                            "description" : "优惠ID"
+                          },
+                          "type" : {
+                            "type" : "string",
+                            "description" : "优惠类型：ACTIVITY(活动)、COUPON(优惠券)"
+                          },
+                          "title" : {
+                            "type" : "string",
+                            "description" : "优惠标题"
+                          },
+                          "description" : {
+                            "type" : "string",
+                            "description" : "优惠说明"
+                          },
+                          "discountAmount" : {
+                            "type" : "number",
+                            "description" : "折扣金额"
+                          },
+                          "afterDiscountPrice" : {
+                            "type" : "number",
+                            "description" : "优惠后价格"
+                          },
+                          "conditions" : {
+                            "type" : "string",
+                            "description" : "使用条件描述"
+                          },
+                          "selected" : {
+                            "type" : "boolean",
+                            "description" : "是否已选择"
+                          }
+                        },
+                        "description" : "ynu.edu.promotion.model.vo.UserPromotionVO"
+                      }
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  },
+                  "description" : "用户视角的可用优惠列表"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/promotions/user/coupons" : {
+      "get" : {
+        "summary" : "获取用户的所有可用优惠券 (用于用户中心)",
+        "description" : "获取用户的所有可用优惠券 (用于用户中心)",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "query",
+          "description" : "用户ID",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "nullable" : false
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "用户的所有可用优惠券",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "properties" : {
+                    "code" : {
+                      "type" : "integer",
+                      "description" : "状态码"
+                    },
+                    "message" : {
+                      "type" : "string",
+                      "description" : "消息"
+                    },
+                    "data" : {
+                      "type" : "array",
+                      "description" : "数据",
+                      "items" : {
+                        "type" : "object",
+                        "properties" : {
+                          "id" : {
+                            "type" : "string",
+                            "description" : "优惠券ID"
+                          },
+                          "title" : {
+                            "type" : "string",
+                            "description" : "优惠券标题"
+                          },
+                          "description" : {
+                            "type" : "string",
+                            "description" : "优惠券描述"
+                          },
+                          "discountAmount" : {
+                            "type" : "number",
+                            "description" : "折扣金额或折扣率"
+                          },
+                          "threshold" : {
+                            "type" : "number",
+                            "description" : "使用门槛"
+                          },
+                          "storeId" : {
+                            "type" : "string",
+                            "description" : "关联店铺ID"
+                          },
+                          "storeName" : {
+                            "type" : "string",
+                            "description" : "店铺名称"
+                          },
+                          "validUntil" : {
+                            "type" : "string",
+                            "description" : "有效期截止时间"
+                          },
+                          "status" : {
+                            "type" : "string",
+                            "description" : "状态：UNUSED(可用)、USED(已使用)、EXPIRED(已过期)"
+                          },
+                          "ruleTypeDesc" : {
+                            "type" : "string",
+                            "description" : "规则类型描述：满减券、折扣券等"
+                          }
+                        },
+                        "description" : "用户优惠券VO，用于用户中心展示\n展示用户所拥有的优惠券，不依赖于具体的订单"
+                      }
+                    },
+                    "success" : {
+                      "type" : "boolean",
+                      "description" : "是否成功"
+                    }
+                  },
+                  "description" : "用户的所有可用优惠券"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/promotions/store/activities" : {
+      "get" : {
+        "summary" : "获取店铺的所有可用优惠活动 (用于商店页面)",
+        "description" : "获取店铺的所有可用优惠活动 (用于商店页面)",
+        "parameters" : [ {
+          "name" : "storeId",
+          "in" : "query",
+          "description" : "店铺ID",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "nullable" : false
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "店铺的所有可用优惠活动",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -127,7 +305,7 @@
                       "description" : "是否成功"
                     }
                   },
-                  "description" : "可用优惠列表"
+                  "description" : "店铺的所有可用优惠活动"
                 }
               }
             }
@@ -196,6 +374,90 @@
           }
         },
         "description" : "优惠信息VO\n用于返回给前端展示的优惠信息"
+      },
+      "ynu.edu.promotion.model.vo.UserPromotionVO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "优惠ID"
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "优惠类型：ACTIVITY(活动)、COUPON(优惠券)"
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "优惠标题"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "优惠说明"
+          },
+          "discountAmount" : {
+            "type" : "number",
+            "description" : "折扣金额"
+          },
+          "afterDiscountPrice" : {
+            "type" : "number",
+            "description" : "优惠后价格"
+          },
+          "conditions" : {
+            "type" : "string",
+            "description" : "使用条件描述"
+          },
+          "selected" : {
+            "type" : "boolean",
+            "description" : "是否已选择"
+          }
+        },
+        "description" : "ynu.edu.promotion.model.vo.UserPromotionVO"
+      },
+      "用户优惠券VO，用于用户中心展示\n展示用户所拥有的优惠券，不依赖于具体的订单" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "description" : "优惠券ID"
+          },
+          "title" : {
+            "type" : "string",
+            "description" : "优惠券标题"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "优惠券描述"
+          },
+          "discountAmount" : {
+            "type" : "number",
+            "description" : "折扣金额或折扣率"
+          },
+          "threshold" : {
+            "type" : "number",
+            "description" : "使用门槛"
+          },
+          "storeId" : {
+            "type" : "string",
+            "description" : "关联店铺ID"
+          },
+          "storeName" : {
+            "type" : "string",
+            "description" : "店铺名称"
+          },
+          "validUntil" : {
+            "type" : "string",
+            "description" : "有效期截止时间"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "状态：UNUSED(可用)、USED(已使用)、EXPIRED(已过期)"
+          },
+          "ruleTypeDesc" : {
+            "type" : "string",
+            "description" : "规则类型描述：满减券、折扣券等"
+          }
+        },
+        "description" : "用户优惠券VO，用于用户中心展示\n展示用户所拥有的优惠券，不依赖于具体的订单"
       }
     }
   }

@@ -54,6 +54,11 @@ class ProfilePage extends StatelessWidget {
                 onTap: () => AppRoutes.router.push(AppRoutes.orders),
               ),
               _buildMenuItem(
+                icon: Icons.card_giftcard_outlined,
+                title: '我的优惠券',
+                onTap: () => AppRoutes.router.push(AppRoutes.coupons),
+              ),
+              _buildMenuItem(
                 icon: Icons.help_outline,
                 title: '帮助中心',
                 onTap: () {},

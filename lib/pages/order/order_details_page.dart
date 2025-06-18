@@ -29,7 +29,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
     super.initState();
     // 使用 postFrameCallback 确保 BuildContext 已准备好
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<OrderProvider>(context, listen: false).fetchOrderById(widget.orderId);
+      Provider.of<OrderProvider>(context, listen: false).getOrderDetail(widget.orderId);
     });
   }
 
@@ -66,6 +66,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                 _buildDeliverySection(context, order),
                 const Divider(height: 32),
                 _buildOrderInfoSection(context, order),
+                const SizedBox(height: 20),
+                _buildActionButtons(context, order),
               ],
             ),
           ),
@@ -145,6 +147,47 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           _buildInfoRow('订单备注', order.remark!),
       ],
     );
+  }
+  
+  // 操作按钮区块
+  Widget _buildActionButtons(BuildContext context, model.Order order) {
+    final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+    
+    if (order.status == model.OrderStatus.pendingPayment) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          OutlinedButton(
+            onPressed: orderProvider.isProcessing 
+              ? null 
+              : () async {
+                  final success = await orderProvider.cancelOrder(order.id);
+                  if (success && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('订单已取消')),
+                    );
+                  }
+                },
+            child: const Text('取消订单'),
+          ),
+          ElevatedButton(
+            onPressed: orderProvider.isProcessing 
+              ? null 
+              : () async {
+                  final success = await orderProvider.payOrder(order.id, 'WECHAT');
+                  if (success && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('支付成功')),
+                    );
+                  }
+                },
+            child: const Text('立即支付'),
+          ),
+        ],
+      );
+    }
+    
+    return const SizedBox.shrink();
   }
 
   Widget _buildPriceRow(String title, String amount, {bool isHighlight = false}) {

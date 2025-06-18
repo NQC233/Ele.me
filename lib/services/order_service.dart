@@ -1,6 +1,4 @@
 import 'api_service.dart';
-import '../models/cart.dart';
-import '../models/address.dart';
 
 ///
 /// 订单服务 (已重构)
@@ -13,7 +11,7 @@ class OrderService {
   OrderService(this._apiService);
 
   /// 获取指定用户的订单列表
-  Future<List<dynamic>> getOrders({required String userId, String? status}) async {
+  Future<List<dynamic>> getUserOrders({required String userId, String? status}) async {
     final Map<String, dynamic> queryParams = {};
     if (status != null) {
       queryParams['status'] = status;
@@ -24,7 +22,7 @@ class OrderService {
       queryParameters: queryParams,
     );
     // API返回的是分页数据，我们提取content
-    return response['data']['content'];
+    return response['data']['content'] ?? [];
   }
 
   /// 获取订单详情
@@ -36,26 +34,22 @@ class OrderService {
   /// 创建订单
   Future<Map<String, dynamic>> createOrder({
     required String userId,
-    required Cart cart,
-    required Address address,
+    required String storeId,
+    required List<Map<String, dynamic>> items,
+    required Map<String, dynamic> address,
     String? remark,
-    String? couponId,
+    String? promotionId,
   }) async {
-    final orderItems = cart.items.map((item) => {
-      'productId': item.food.id,
-      'quantity': item.quantity,
-    }).toList();
-
     final response = await _apiService.request(
       '/orders',
       method: 'POST',
       data: {
         'userId': userId,
-        'storeId': cart.shopId,
-        'addressId': address.id,
-        'orderItems': orderItems,
+        'storeId': storeId,
+        'addressId': address['id'],
+        'orderItems': items,
         'remark': remark,
-        'couponId': couponId,
+        'promotionId': promotionId,
       },
     );
     return response['data'];
@@ -64,24 +58,20 @@ class OrderService {
   /// 计算订单价格
   Future<Map<String, dynamic>> calculateOrderPrice({
     required String userId,
-    required Cart cart,
+    required String storeId,
+    required List<Map<String, dynamic>> items,
     required String addressId,
-    String? couponId,
+    String? promotionId,
   }) async {
-    final orderItems = cart.items.map((item) => {
-      'productId': item.food.id,
-      'quantity': item.quantity,
-    }).toList();
-
     final response = await _apiService.request(
       '/orders/price',
       method: 'POST',
       data: {
         'userId': userId,
-        'storeId': cart.shopId,
+        'storeId': storeId,
         'addressId': addressId,
-        'orderItems': orderItems,
-        'couponId': couponId,
+        'orderItems': items,
+        'promotionId': promotionId,
       },
     );
     return response['data'];
@@ -90,24 +80,40 @@ class OrderService {
   /// 根据订单号获取订单
   /// 
   /// [orderNo] 订单号
-  Future<Map<String, dynamic>> getOrderByOrderNo(String orderNo) async {
-    final response = await _apiService.get('/orders/no/$orderNo');
+  Future<Map<String, dynamic>> getOrderByOrderNo({required String orderNo}) async {
+    final response = await _apiService.request('/orders/no/$orderNo', method: 'GET');
     return response['data'];
   }
 
   /// 支付订单
   /// 
-  /// [orderNo] 订单号
-  Future<Map<String, dynamic>> payOrder(String orderNo) async {
-    final response = await _apiService.post('/orders/$orderNo/pay');
-    return response['data'];
+  /// [orderId] 订单ID
+  /// [paymentMethod] 支付方式
+  Future<bool> payOrder({required String orderId, required String paymentMethod}) async {
+    try {
+      final response = await _apiService.request(
+        '/orders/$orderId/pay',
+        method: 'POST',
+        data: {'paymentMethod': paymentMethod},
+      );
+      return response['success'] == true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// 取消订单
   /// 
   /// [orderId] 订单ID
-  Future<Map<String, dynamic>> cancelOrder(String orderId) async {
-    final response = await _apiService.post('/orders/$orderId/cancel');
-    return response['data'];
+  Future<bool> cancelOrder({required String orderId}) async {
+    try {
+      final response = await _apiService.request(
+        '/orders/$orderId/cancel',
+        method: 'POST',
+      );
+      return response['success'] == true;
+    } catch (e) {
+      return false;
+    }
   }
 } 

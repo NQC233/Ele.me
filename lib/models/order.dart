@@ -191,6 +191,15 @@ class Order {
     );
   }
 
+  // 使用状态字符串更新状态
+  Order copyWithStatus(String statusStr) {
+    final newStatus = OrderStatus.values.firstWhere(
+      (e) => e.name.toUpperCase() == statusStr.toUpperCase(),
+      orElse: () => this.status,
+    );
+    return copyWith(status: newStatus);
+  }
+
   // 计算订单中的商品总数量
   int get totalQuantity {
     return items.fold(0, (sum, item) => sum + item.quantity);

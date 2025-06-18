@@ -78,6 +78,11 @@ class ApiService {
     _updateAuthHeader();
     debugPrint('已清除令牌');
   }
+  
+  // 获取当前令牌
+  String? getToken() {
+    return _token;
+  }
 
   Future<dynamic> request(
     String path, {

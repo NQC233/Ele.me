@@ -15,6 +15,7 @@ import '../pages/profile/address_edit_page.dart';
 import '../pages/order/order_details_page.dart';
 import '../pages/order/orders_page.dart';
 import '../pages/profile/profile_page.dart';
+import '../pages/profile/coupons_page.dart';
 
 ///
 /// 应用路由配置
@@ -35,6 +36,7 @@ class AppRoutes {
   static const String addressEdit = '/profile/address/edit';
   static const String addressAdd = '/profile/address/add';
   static const String orderConfirmation = '/order/confirm';
+  static const String coupons = '/profile/coupons';
   
   static final GoRouter router = GoRouter(
     initialLocation: home,
@@ -131,6 +133,11 @@ class AppRoutes {
         path: orderConfirmation,
         name: orderConfirmation,
         builder: (context, state) => const OrderConfirmationPage(),
+      ),
+      GoRoute(
+        path: coupons,
+        name: coupons,
+        builder: (context, state) => const CouponsPage(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/cart.dart';
 import '../models/food.dart';
 import '../models/shop.dart';
+import '../models/promotion.dart';
 import '../services/index.dart';
 import '../services/api_service.dart';
 import '../services/shop_service.dart';
@@ -152,9 +153,15 @@ class CartProvider extends ChangeNotifier {
     try {
       _priceCalculation = await _orderService.calculateOrderPrice(
         userId: userId,
-        cart: _cart,
+        storeId: _cart.shopId,
+        items: _cart.items.map((item) => {
+          'productId': item.food.id,
+          'productName': item.food.name,
+          'price': item.food.price,
+          'quantity': item.quantity,
+        }).toList(),
         addressId: addressId,
-        couponId: couponId,
+        promotionId: couponId,
       );
     } catch (e) {
       debugPrint('计算订单价格失败: $e');
@@ -166,7 +173,7 @@ class CartProvider extends ChangeNotifier {
   }
   
   /// 获取可用优惠列表
-  Future<List<dynamic>> getApplicablePromotions(String userId) async {
+  Future<List<Promotion>> getOrderPromotions(String userId) async {
     if (_cart.items.isEmpty) return [];
     
     try {
@@ -177,7 +184,7 @@ class CartProvider extends ChangeNotifier {
         'quantity': item.quantity,
       }).toList();
       
-      return await _promotionService.getApplicablePromotions(
+      return await _promotionService.getOrderPromotions(
         userId: userId,
         storeId: _cart.shopId,
         totalAmount: totalPrice,
