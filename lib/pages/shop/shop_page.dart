@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 import 'package:elm/models/shop.dart';
 import 'package:elm/providers/shop_provider.dart';
@@ -21,6 +22,7 @@ class ShopPage extends StatefulWidget {
 
 class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _currentCarouselIndex = 0;
 
   @override
   void initState() {
@@ -43,6 +45,88 @@ class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin
       }
     });
     super.dispose();
+  }
+
+  // 构建图片轮播
+  Widget _buildImageCarousel(Shop shop) {
+    // 检查是否有图片
+    final images = shop.images;
+    if (images == null || images.isEmpty) {
+      // 如果没有图片，显示店铺Logo
+      return Image.network(
+        shop.logoUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('加载店铺图片失败: $error');
+          return Container(color: Colors.grey);
+        },
+      );
+    }
+
+    // 有图片，构建轮播
+    return Stack(
+      children: [
+        CarouselSlider(
+          options: CarouselOptions(
+            height: 200.0,
+            viewportFraction: 1.0,
+            enlargeCenterPage: false,
+            autoPlay: true,
+            autoPlayInterval: const Duration(seconds: 3),
+            autoPlayAnimationDuration: const Duration(milliseconds: 800),
+            onPageChanged: (index, reason) {
+              setState(() {
+                _currentCarouselIndex = index;
+              });
+            },
+          ),
+          items: images.map((imageUrl) {
+            return Builder(
+              builder: (BuildContext context) {
+                return Container(
+                  width: MediaQuery.of(context).size.width,
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => 
+                      Container(
+                        color: Colors.grey[300],
+                        child: const Center(child: Icon(Icons.error)),
+                      ),
+                  ),
+                );
+              },
+            );
+          }).toList(),
+        ),
+        // 指示器
+        if (images.length > 1)
+          Positioned(
+            bottom: 10,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: images.asMap().entries.map((entry) {
+                return Container(
+                  width: 8.0,
+                  height: 8.0,
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 8.0,
+                    horizontal: 4.0,
+                  ),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(
+                      _currentCarouselIndex == entry.key ? 0.9 : 0.4,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+      ],
+    );
   }
 
   @override
@@ -101,14 +185,7 @@ class _ShopPageState extends State<ShopPage> with SingleTickerProviderStateMixin
                   flexibleSpace: FlexibleSpaceBar(
                     centerTitle: true,
                     title: Text(shop.name, style: const TextStyle(color: Colors.white, fontSize: 16.0)),
-                    background: Image.network(
-                      shop.logoUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        debugPrint('加载店铺图片失败: $error');
-                        return Container(color: Colors.grey);
-                      },
-                    ),
+                    background: _buildImageCarousel(shop),
                   ),
                 ),
                 SliverPersistentHeader(
