@@ -76,9 +76,9 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
           return TabBarView(
             controller: _tabController,
             children: [
-              OrderListTab(orders: allOrders),
-              OrderListTab(orders: processingOrders),
-              OrderListTab(orders: completedOrders),
+              OrderListTab(status: 'all'),
+              OrderListTab(status: 'processing'),
+              OrderListTab(status: 'completed'),
             ],
           );
         },

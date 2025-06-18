@@ -63,6 +63,28 @@ dependencies:
   # UUID
   uuid: ^4.4.2
   get_it: ^8.0.3
+  
+  # UI美化相关
+  # 屏幕适配
+  flutter_screenutil: ^5.9.0
+  # 列表动画
+  flutter_staggered_animations: ^1.1.1
+  # 闪光加载效果
+  shimmer: ^3.0.0
+  # Google字体
+  google_fonts: ^6.1.0
+  # SVG图标支持
+  flutter_svg: ^2.0.9
+  # 渐变效果
+  gradient_widgets: ^0.6.0
+  # 骨架屏
+  skeletons: ^0.0.3
+  # 动画按钮
+  animated_button: ^0.2.0
+  # 滑动删除
+  flutter_slidable: ^3.0.1
+  # 底部弹出菜单
+  modal_bottom_sheet: ^3.0.0-pre
 
 dev_dependencies:
   flutter_test:

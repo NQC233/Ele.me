@@ -5,6 +5,7 @@ import '../../models/shop.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/shop_provider.dart';
 import '../../widgets/common/loading_indicator.dart';
+import '../../config/app_theme.dart';
 
 class ShopMenuTab extends StatefulWidget {
   final Shop shop;
@@ -53,12 +54,44 @@ class _ShopMenuTabState extends State<ShopMenuTab> {
         }
 
         if (shopProvider.error != null) {
-          return Center(child: Text('加载失败: ${shopProvider.error}'));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 60,
+                  color: Colors.grey.shade400,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '加载失败: ${shopProvider.error}',
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          );
         }
 
         final groupedMenu = shopProvider.menu;
         if (groupedMenu.isEmpty) {
-          return const Center(child: Text('该商家暂未上架商品'));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.restaurant_menu,
+                  size: 60,
+                  color: Colors.grey.shade400,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '该商家暂未上架商品',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          );
         }
 
         final categories = groupedMenu.keys.toList();
@@ -78,12 +111,15 @@ class _ShopMenuTabState extends State<ShopMenuTab> {
 
   Widget _buildCategoryList(BuildContext context, List<String> categories) {
     return Container(
-      width: 80,
-      color: Colors.grey[200],
+      width: 90,
+      color: Colors.grey[100],
       child: ListView.builder(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final category = categories[index];
+          final isSelected = _selectedCategoryIndex == index;
+          
           return InkWell(
             onTap: () {
               setState(() {
@@ -91,24 +127,37 @@ class _ShopMenuTabState extends State<ShopMenuTab> {
               });
               _scrollToCategory(category);
             },
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
               decoration: BoxDecoration(
-                color: _selectedCategoryIndex == index ? Colors.white : Colors.grey[200],
+                color: isSelected ? Colors.white : Colors.grey[100],
                 border: Border(
                   left: BorderSide(
-                    color: _selectedCategoryIndex == index ? Theme.of(context).primaryColor : Colors.transparent,
-                    width: 3,
+                    color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                    width: 4,
                   ),
                 ),
               ),
-              child: Text(
-                category,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: _selectedCategoryIndex == index ? FontWeight.bold : FontWeight.normal,
-                  color: _selectedCategoryIndex == index ? Theme.of(context).primaryColor : Colors.black87,
-                ),
+              child: Column(
+                children: [
+                  if (isSelected)
+                    Icon(
+                      Icons.restaurant,
+                      size: 20,
+                      color: AppTheme.primaryColor,
+                    ),
+                  const SizedBox(height: 4),
+                  Text(
+                    category,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? AppTheme.primaryColor : Colors.black87,
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -122,6 +171,8 @@ class _ShopMenuTabState extends State<ShopMenuTab> {
     
     return ListView.builder(
       controller: _scrollController,
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 100), // 底部留白，避免被购物车挡住
       itemCount: groupedMenu.length,
       itemBuilder: (context, index) {
         final category = categories[index];
@@ -141,11 +192,43 @@ class _ShopMenuTabState extends State<ShopMenuTab> {
                   _updateCategoryPosition(category, scrollPosition);
                 });
                 
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    category,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                return Container(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  color: Colors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            category,
+                            style: const TextStyle(
+                              fontSize: 16, 
+                              fontWeight: FontWeight.bold
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${foods.length}个菜品',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      const Divider(),
+                    ],
                   ),
                 );
               },
@@ -161,50 +244,146 @@ class _ShopMenuTabState extends State<ShopMenuTab> {
     final cartProvider = Provider.of<CartProvider>(context);
     final quantity = cartProvider.getQuantity(food);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Row(
-        children: [
-          Image.network(
-            food.imageUrl,
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 80),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(width: 16),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 食品图片
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              food.imageUrl,
+              width: 90,
+              height: 90,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                width: 90,
+                height: 90,
+                color: Colors.grey[200],
+                child: const Icon(Icons.image_not_supported, color: Colors.grey),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          
+          // 食品信息
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(food.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(
+                  food.name, 
+                  style: const TextStyle(
+                    fontSize: 16, 
+                    fontWeight: FontWeight.bold
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(food.description, maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Text('月售 ${food.monthSales}'),
+                Text(
+                  food.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.local_fire_department,
+                      size: 14,
+                      color: Colors.orange[700],
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '月售 ${food.monthSales}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                
+                // 价格和操作按钮
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '¥${food.price.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        if (quantity > 0)
+                          InkWell(
+                            onTap: () => cartProvider.decreaseFromCart(food),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.remove,
+                                size: 16,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        if (quantity > 0)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              '$quantity',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        InkWell(
+                          onTap: () => cartProvider.addToCart(food, widget.shop),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.add,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-          Column(
-            children: [
-              Text('¥${food.price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  if (quantity > 0)
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle),
-                      onPressed: () => cartProvider.decreaseFromCart(food),
-                    ),
-                  if (quantity > 0) Text('$quantity'),
-                  IconButton(
-                    icon: const Icon(Icons.add_circle),
-                    onPressed: () => cartProvider.addToCart(food, widget.shop),
-                  ),
-                ],
-              )
-            ],
-          )
         ],
       ),
     );
