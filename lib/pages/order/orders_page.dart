@@ -5,7 +5,9 @@ import '../../providers/order_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../models/order.dart';
 import '../../widgets/common/loading_indicator.dart';
+import '../../widgets/common/empty_placeholder.dart';
 import '../../widgets/order/order_list_tab.dart';
+import '../../config/app_theme.dart';
 
 ///
 /// 订单页面 (已重构)
@@ -40,11 +42,21 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('我的订单'),
+        elevation: 0,
+        backgroundColor: AppTheme.primaryColor,
+        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withOpacity(0.7),
+          indicatorWeight: 3,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           tabs: const [
             Tab(text: '全部'),
             Tab(text: '进行中'),
@@ -55,27 +67,31 @@ class _OrdersPageState extends State<OrdersPage> with SingleTickerProviderStateM
       body: Consumer<OrderProvider>(
         builder: (context, orderProvider, child) {
           if (orderProvider.isLoading) {
-            return const LoadingIndicator();
+            return const Center(child: LoadingIndicator());
           }
 
-          final allOrders = orderProvider.orders;
+          // 检查用户是否登录
+          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          if (!userProvider.isLoggedIn) {
+            return const EmptyPlaceholder(
+              icon: Icons.account_circle,
+              title: '请先登录',
+              subtitle: '登录后查看您的订单',
+            );
+          }
           
-          // 筛选进行中的订单
-          final processingOrders = allOrders.where((order) => 
-            order.status == OrderStatus.pendingPayment ||
-            order.status == OrderStatus.paid ||
-            order.status == OrderStatus.preparing ||
-            order.status == OrderStatus.delivering
-          ).toList();
-          
-          // 筛选已完成的订单
-          final completedOrders = allOrders.where((order) => 
-            order.status == OrderStatus.completed
-          ).toList();
+          // 检查是否有订单
+          if (orderProvider.orders.isEmpty) {
+            return const EmptyPlaceholder(
+              icon: Icons.receipt_long,
+              title: '暂无订单',
+              subtitle: '去浏览更多美食吧',
+            );
+          }
 
           return TabBarView(
             controller: _tabController,
-            children: [
+            children: const [
               OrderListTab(status: 'all'),
               OrderListTab(status: 'processing'),
               OrderListTab(status: 'completed'),

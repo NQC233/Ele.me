@@ -138,7 +138,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
     return SliverAppBar(
       pinned: true,
       floating: true,
-      expandedHeight: 160,
+      expandedHeight: 100,
       backgroundColor: Color(0xFF2196F3).withOpacity(0.85),
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -156,7 +156,7 @@ class _HomeTabState extends State<HomeTab> with SingleTickerProviderStateMixin {
         titlePadding: EdgeInsets.zero,
         expandedTitleScale: 1.0,
         title: Container(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
           alignment: Alignment.topLeft,
           child: GestureDetector(
             onTap: () => context.push(AppRoutes.addressList),

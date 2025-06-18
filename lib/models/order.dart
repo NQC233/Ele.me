@@ -93,6 +93,24 @@ class Order {
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
+    // 添加日志输出，方便定位问题
+    String statusFromBackend = json['status'] as String? ?? '';
+    debugPrint('后端返回的订单状态: $statusFromBackend');
+    
+    // 状态映射表
+    Map<String, OrderStatus> statusMapping = {
+      'PENDING_PAYMENT': OrderStatus.pendingPayment,
+      'PAID': OrderStatus.paid,
+      'PREPARING': OrderStatus.preparing,
+      'DELIVERING': OrderStatus.delivering,
+      'COMPLETED': OrderStatus.completed,
+      'CANCELED': OrderStatus.canceled,
+    };
+
+    // 直接从映射表获取状态
+    OrderStatus orderStatus = statusMapping[statusFromBackend] ?? OrderStatus.pendingPayment;
+    debugPrint('映射后的订单状态: ${orderStatus.name}');
+
     return Order(
       id: json['id'],
       orderNo: json['orderNo'],
@@ -100,10 +118,7 @@ class Order {
       storeId: json['storeId'],
       storeName: json['storeName'] ?? '',
       storeImage: json['storeImage'] ?? '',
-      status: OrderStatus.values.firstWhere(
-        (e) => e.name.toUpperCase() == (json['status'] as String? ?? '').toUpperCase(),
-        orElse: () => OrderStatus.canceled,
-      ),
+      status: orderStatus,
       statusDesc: json['statusDesc'] ?? '状态未知',
       totalAmount: (json['totalAmount'] as num? ?? 0).toDouble(),
       payAmount: (json['payAmount'] as num? ?? 0).toDouble(),

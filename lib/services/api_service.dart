@@ -14,10 +14,7 @@ class ApiService {
   late Dio _dio;
   String? _token;
   
-  // 定义固定的后端URL，这样后端可以配置固定的CORS规则
-  // 使用localhost:9000，不管Flutter Web使用哪个端口
-  static const String baseUrl = 'http://localhost:8080';
-  
+  final baseUrl = kIsWeb ? 'http://localhost:8080' : 'http://10.0.2.2:8080';
   ApiService._internal() {
     BaseOptions options = BaseOptions(
       baseUrl: baseUrl, // 使用固定的baseUrl

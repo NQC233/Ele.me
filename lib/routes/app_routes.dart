@@ -16,6 +16,7 @@ import '../pages/order/order_details_page.dart';
 import '../pages/order/orders_page.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/profile/coupons_page.dart';
+import '../pages/order/payment_page.dart';
 
 ///
 /// 应用路由配置
@@ -37,6 +38,7 @@ class AppRoutes {
   static const String addressAdd = '/profile/address/add';
   static const String orderConfirmation = '/order/confirm';
   static const String coupons = '/profile/coupons';
+  static const String payment = '/orders/payment';
   
   static final GoRouter router = GoRouter(
     initialLocation: home,
@@ -89,6 +91,14 @@ class AppRoutes {
         builder: (context, state) => const OrdersPage(),
       ),
       GoRoute(
+        path: '$orderDetail/:orderId',
+        name: 'order_details_with_id',
+        builder: (context, state) {
+          final orderId = state.pathParameters['orderId']!;
+          return OrderDetailsPage(orderId: orderId);
+        },
+      ),
+      GoRoute(
         path: orderDetail,
         name: orderDetail,
         builder: (context, state) {
@@ -138,6 +148,14 @@ class AppRoutes {
         path: coupons,
         name: coupons,
         builder: (context, state) => const CouponsPage(),
+      ),
+      GoRoute(
+        path: payment,
+        name: payment,
+        builder: (context, state) {
+          final orderId = state.extra as String;
+          return PaymentPage(orderId: orderId);
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
