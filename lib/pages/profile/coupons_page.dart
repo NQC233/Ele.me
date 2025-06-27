@@ -84,8 +84,17 @@ class _CouponsPageState extends State<CouponsPage> with SingleTickerProviderStat
     return Scaffold(
       appBar: AppBar(
         title: const Text('我的优惠券'),
+        backgroundColor: AppTheme.primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 0,
         bottom: TabBar(
           controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white.withOpacity(0.7),
+          indicatorWeight: 3,
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          unselectedLabelStyle: const TextStyle(fontSize: 14),
           tabs: const [
             Tab(text: '可用'),
             Tab(text: '已使用'),

@@ -12,7 +12,7 @@ import '../services/order_service.dart';
 import '../services/promotion_service.dart';
 
 ///
-/// 购物车状态提供者 (已重构)
+/// 购物车状态提供者
 ///
 /// 负责管理应用的购物车状态。
 ///
